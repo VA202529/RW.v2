@@ -1,0 +1,101 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-brand-bg: var(--brand-bg);
+  --color-brand-surface: var(--brand-surface);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-accent-glow: var(--brand-accent-glow);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-text: var(--brand-text);
+  --color-brand-muted: var(--brand-muted);
+
+  --font-display: "Syne", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --radius: 0.5rem;
+
+  --brand-bg: #f0f7ff;
+  --brand-surface: #ffffff;
+  --brand-accent: #2B3BEF;
+  --brand-accent-glow: rgba(43, 59, 239, 0.45);
+  --brand-dark: #0C0C0E;
+  --brand-text: #0b1e3a;
+  --brand-muted: #64748b;
+
+  --background: #f0f7ff;
+  --foreground: #0b1e3a;
+  --card: #ffffff;
+  --card-foreground: #0b1e3a;
+  --popover: #ffffff;
+  --popover-foreground: #0b1e3a;
+  --primary: #2B3BEF;
+  --primary-foreground: #ffffff;
+  --secondary: #dbeafe;
+  --secondary-foreground: #0b1e3a;
+  --muted: #e0ecff;
+  --muted-foreground: #64748b;
+  --accent: #2B3BEF;
+  --accent-foreground: #ffffff;
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: #ffffff;
+  --border: rgba(11, 30, 58, 0.1);
+  --input: rgba(11, 30, 58, 0.15);
+  --ring: #2B3BEF;
+}
+
+@utility glow-accent {
+  box-shadow: 0 0 24px var(--brand-accent-glow);
+}
+
+@utility glow-accent-lg {
+  box-shadow: 0 0 48px var(--brand-accent-glow), 0 0 16px var(--brand-accent-glow);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html,
+  body {
+    background-color: var(--color-brand-bg);
+    color: var(--color-brand-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: var(--color-brand-accent);
+    color: white;
+  }
+}
