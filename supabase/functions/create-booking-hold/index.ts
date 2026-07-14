@@ -32,6 +32,9 @@ Deno.serve(async (req) => {
     const ip = req.headers.get("cf-connecting-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
     const validTurnstile = await verifyTurnstile(body.turnstile_token, ip);
     if (!validTurnstile) return json({ code: "INVALID_TURNSTILE" }, 403);
+    if (!body.service_id || !body.starts_at || !body.guest) {
+      return json({ code: "INVALID_BODY", message: "service_id, starts_at and guest are required" }, 400);
+    }
 
     const supabase = serviceClient();
     const { data, error } = await supabase.rpc("wp1_create_booking_hold", {
@@ -45,7 +48,14 @@ Deno.serve(async (req) => {
       p_terms_accepted: body.guest?.terms_accepted === true,
       p_ip: ip,
     });
-    if (error) throw error;
+    if (error) {
+      console.error("RPC wp1_create_booking_hold failed:", error);
+      return json({ code: error.code ?? "RPC_ERROR", message: error.message, detail: error.details }, 500);
+    }
+    if (!data) {
+      console.error("RPC wp1_create_booking_hold returned empty data");
+      return json({ code: "EMPTY_RPC_RESPONSE" }, 500);
+    }
 
     const status = data.status ?? 200;
     const sessionIds = data.superseded_checkout_session_ids ?? [];
