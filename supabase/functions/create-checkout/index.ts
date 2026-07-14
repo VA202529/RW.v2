@@ -46,8 +46,8 @@ Deno.serve(async (req) => {
         locale: "nl",
         customer_email: data.customer_email,
         expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
-        success_url: `${origin}/success?booking_id=${data.booking_id}&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/betaling-mislukt?booking_id=${data.booking_id}`,
+        success_url: `${origin}/boeken/succes?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/boeken/verlopen`,
         metadata: { booking_id: data.booking_id, cancel_token: cancellation_token ?? "" },
         payment_intent_data: {
           application_fee_amount: APPLICATION_FEE_CENTS,
