@@ -8,7 +8,7 @@ Deno.serve(async (req) => {
   const userId = await requireAdmin(req);
   if (!userId) return json({ code: "FORBIDDEN" }, 403);
   try {
-    const body = req.method === "GET" ? Object.fromEntries(new URL(req.url).searchParams) : await req.json();
+    const body = await req.json();
     const { data, error } = await serviceClient().rpc("wp5_admin_manage_reviews", {
       p_auth_user_id: userId,
       p_action: body.action ?? "list",

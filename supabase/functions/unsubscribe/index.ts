@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
   const options = handleOptions(req);
   if (options) return options;
   try {
-    const body = req.method === "GET" ? Object.fromEntries(new URL(req.url).searchParams) : await req.json();
+    const body = await req.json();
     const token = String(body.token ?? "");
     const decoded = JSON.parse(atob(token)) as { email: string; sig: string };
     if (!decoded.email || decoded.sig !== await sign(decoded.email)) return json({ code: "FORBIDDEN" }, 403);

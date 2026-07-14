@@ -7,7 +7,7 @@ Deno.serve(async (req) => {
   if (options) return options;
   const userId = await requireAdmin(req);
   if (!userId) return json({ code: "FORBIDDEN" }, 403);
-  const body = req.method === "GET" ? Object.fromEntries(new URL(req.url).searchParams) : await req.json();
+  const body = await req.json();
   const { data, error } = await serviceClient().rpc("wp3_admin_dashboard_data", {
     p_auth_user_id: userId,
     p_from: body.from,

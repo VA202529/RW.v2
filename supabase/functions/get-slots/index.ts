@@ -37,10 +37,7 @@ Deno.serve(async (req) => {
   if (options) return options;
 
   try {
-    const url = new URL(req.url);
-    const serviceId = url.searchParams.get("service_id");
-    const from = url.searchParams.get("from");
-    const to = url.searchParams.get("to");
+    const { service_id: serviceId, from, to } = await req.json();
 
     if (!serviceId || !from || !to) {
       return noStoreJson({ code: "MISSING_PARAMS" }, 400);
