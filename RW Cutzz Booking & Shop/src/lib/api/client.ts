@@ -10,16 +10,29 @@ import type {
 } from "./types";
 import { mockServices, mockProducts, mockReviews, mockSlots, mockAccount } from "./mock";
 
-async function invoke<T>(name: string, body?: unknown, opts?: { token?: string }): Promise<T> {
-  if (!HAS_BACKEND || !supabase) throw new ApiError("Geen backend geconfigureerd.", { code: "NO_BACKEND" });
-  const { data, error } = await supabase.functions.invoke(name, {
-    body: body ?? {},
-    headers: opts?.token ? { authorization: `Bearer ${opts.token}` } : undefined,
+async function edgeFunction<T>(name: string, body?: unknown, opts?: { token?: string }): Promise<T> {
+  if (!HAS_BACKEND || !SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    throw new ApiError("Geen backend geconfigureerd.", { code: "NO_BACKEND" });
+  }
+
+  const sessionToken =
+    opts?.token ??
+    (supabase ? (await supabase.auth.getSession()).data.session?.access_token : undefined);
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/${name}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${sessionToken ?? SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify(body ?? {}),
   });
-  if (error) {
-    throw new ApiError(error.message ?? "Er ging iets mis.", {
-      code: (data as any)?.code,
-      status: (error as any).context?.status,
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : undefined;
+  if (!res.ok) {
+    throw new ApiError(data?.message ?? data?.code ?? "Er ging iets mis.", {
+      code: data?.code,
+      status: res.status,
     });
   }
   return data as T;
@@ -50,29 +63,12 @@ export async function getSlots(args: {
     await sleep(200);
     return mockSlots(args.from, args.to);
   }
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    throw new ApiError("Geen backend geconfigureerd.", { code: "NO_BACKEND" });
-  }
   const body = {
     service_id: args.service_id,
     from: args.from.slice(0, 10),
     to: args.to.slice(0, 10),
   };
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/get-slots`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-    },
-    body: JSON.stringify(body),
-  });
-  const data = (await res.json()) as { slots?: Array<string | { starts_at: string }>; code?: string };
-  if (!res.ok) {
-    throw new ApiError("Kon beschikbare tijden niet laden.", {
-      code: data.code,
-      status: res.status,
-    });
-  }
+  const data = await edgeFunction<{ slots?: Array<string | { starts_at: string }> }>("get-slots", body);
   if (!data.slots) return [];
   return data.slots.map((slot) => (typeof slot === "string" ? slot : slot.starts_at));
 }
@@ -91,7 +87,19 @@ export async function createBookingHold(args: {
       expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
     };
   }
-  return invoke("create-booking-hold", args);
+  return edgeFunction("create-booking-hold", {
+    service_id: args.service_id,
+    starts_at: args.starts_at,
+    guest: {
+      full_name: args.guest.full_name,
+      email: args.guest.email,
+      phone_e164: args.guest.phone_e164,
+      whatsapp_opt_in: args.guest.whatsapp_opt_in,
+      marketing_email_opt_in: args.guest.marketing_email_opt_in,
+      terms_accepted: args.guest.terms_accepted,
+    },
+    turnstile_token: args.turnstile_token,
+  });
 }
 
 export async function createCheckout(args: {
@@ -101,7 +109,7 @@ export async function createCheckout(args: {
     await sleep(400);
     return { status: "confirmed" };
   }
-  const data = await invoke<{ checkout_url?: string; url?: string; status?: string; confirmed?: boolean }>("create-checkout", args);
+  const data = await edgeFunction<{ checkout_url?: string; url?: string; status?: string; confirmed?: boolean }>("create-checkout", args);
   return { checkout_url: data.checkout_url ?? data.url, status: data.status ?? (data.confirmed ? "confirmed" : undefined) };
 }
 
@@ -110,7 +118,7 @@ export async function getProducts(): Promise<Product[]> {
     await sleep(150);
     return mockProducts;
   }
-  const data = await invoke<{ products: Product[] }>("get-products");
+  const data = await edgeFunction<{ products: Product[] }>("get-products");
   return data.products;
 }
 
@@ -127,7 +135,21 @@ export async function createOrder(args: {
       expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
     };
   }
-  return invoke("create-order", args);
+  return edgeFunction("create-order", {
+    items: args.items.map((item) => ({
+      product_id: item.product_id,
+      quantity: item.quantity,
+    })),
+    guest: {
+      full_name: args.guest.full_name,
+      email: args.guest.email,
+      phone_e164: args.guest.phone_e164,
+      whatsapp_opt_in: args.guest.whatsapp_opt_in,
+      marketing_email_opt_in: args.guest.marketing_email_opt_in,
+      terms_accepted: args.guest.terms_accepted,
+    },
+    turnstile_token: args.turnstile_token,
+  });
 }
 
 export async function createOrderCheckout(args: {
@@ -137,7 +159,7 @@ export async function createOrderCheckout(args: {
     await sleep(400);
     return { status: "paid" };
   }
-  const data = await invoke<{ checkout_url?: string; url?: string; status?: string; paid?: boolean }>("create-order-checkout", args);
+  const data = await edgeFunction<{ checkout_url?: string; url?: string; status?: string; paid?: boolean }>("create-order-checkout", args);
   return { checkout_url: data.checkout_url ?? data.url, status: data.status ?? (data.paid ? "paid" : undefined) };
 }
 
@@ -146,7 +168,7 @@ export async function getPublicReviews(): Promise<Review[]> {
     await sleep(150);
     return mockReviews;
   }
-  const data = await invoke<{ reviews: Review[] }>("get-public-reviews");
+  const data = await edgeFunction<{ reviews: Review[] }>("get-public-reviews");
   return data.reviews;
 }
 
@@ -160,7 +182,7 @@ export async function getBookingSummary(args: {
       starts_at: new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString(),
     };
   }
-  return invoke("get-booking-summary", args);
+  return edgeFunction("get-booking-summary", args);
 }
 
 export async function submitReview(args: {
@@ -173,7 +195,7 @@ export async function submitReview(args: {
     await sleep(300);
     return;
   }
-  await invoke("submit-review", args);
+  await edgeFunction("submit-review", args);
 }
 
 export async function unsubscribe(args: { token: string }): Promise<void> {
@@ -181,7 +203,7 @@ export async function unsubscribe(args: { token: string }): Promise<void> {
     await sleep(200);
     return;
   }
-  await invoke("unsubscribe", args);
+  await edgeFunction("unsubscribe", args);
 }
 
 /* -------------------- AUTHENTICATED -------------------- */
@@ -191,7 +213,7 @@ export async function getAccountData(): Promise<AccountData> {
     await sleep(200);
     return mockAccount;
   }
-  return invoke("account-data");
+  return edgeFunction("account-data");
 }
 
 export async function cancelBooking(args: {
@@ -200,7 +222,7 @@ export async function cancelBooking(args: {
   cancellation_token?: string;
 }): Promise<{ result: string }> {
   if (!HAS_BACKEND) return { result: args.action === "credit" ? "credited" : "refunded" };
-  return invoke("cancel-booking", args);
+  return edgeFunction("cancel-booking", args);
 }
 
 export async function rescheduleBooking(args: {
@@ -209,7 +231,7 @@ export async function rescheduleBooking(args: {
   cancellation_token?: string;
 }): Promise<{ new_booking_id: string }> {
   if (!HAS_BACKEND) return { new_booking_id: "reb-" + Math.random().toString(36).slice(2, 8) };
-  return invoke("reschedule-booking", args);
+  return edgeFunction("reschedule-booking", args);
 }
 
 export async function updateNotificationPrefs(args: {
@@ -217,17 +239,17 @@ export async function updateNotificationPrefs(args: {
   marketing_email_opt_in: boolean;
 }): Promise<void> {
   if (!HAS_BACKEND) return;
-  await invoke("update-notification-prefs", args);
+  await edgeFunction("update-notification-prefs", args);
 }
 
 export async function updateCustomerPhone(args: { phone_e164: string }): Promise<void> {
   if (!HAS_BACKEND) return;
-  await invoke("update-customer-phone", args);
+  await edgeFunction("update-customer-phone", args);
 }
 
 export async function deleteAccount(): Promise<void> {
   if (!HAS_BACKEND) return;
-  await invoke("delete-account");
+  await edgeFunction("delete-account");
 }
 
 export async function cancelOrder(args: {
@@ -235,7 +257,7 @@ export async function cancelOrder(args: {
   cancellation_token?: string;
 }): Promise<void> {
   if (!HAS_BACKEND) return;
-  await invoke("cancel-order", args);
+  await edgeFunction("cancel-order", args);
 }
 
 export function dutchError(err: unknown): string {
