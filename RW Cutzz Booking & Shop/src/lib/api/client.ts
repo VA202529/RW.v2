@@ -18,7 +18,6 @@ async function edgeFunction<T>(name: string, body?: unknown, opts?: { token?: st
   const sessionToken =
     opts?.token ??
     (supabase ? (await supabase.auth.getSession()).data.session?.access_token : undefined);
-  console.log("[API] Calling:", name, "with body:", JSON.stringify(body));
   const res = await fetch(`${SUPABASE_URL}/functions/v1/${name}`, {
     method: "POST",
     headers: {
@@ -29,7 +28,6 @@ async function edgeFunction<T>(name: string, body?: unknown, opts?: { token?: st
     body: JSON.stringify(body ?? {}),
   });
   const responseText = await res.text();
-  console.log("[API] Response:", res.status, responseText);
   const data = responseText ? JSON.parse(responseText) : undefined;
   if (!res.ok) {
     throw new ApiError(data?.message ?? data?.code ?? "Er ging iets mis.", {
@@ -81,10 +79,6 @@ export async function createBookingHold(args: {
   guest: Guest;
   turnstile_token: string;
 }): Promise<{ booking_id: string; cancel_token: string; expires_at: string }> {
-  console.log("BOOKING HOLD PAYLOAD:", JSON.stringify(args));
-  console.log("[BOOKING] args received:", JSON.stringify(args));
-  console.log("[BOOKING] guest.terms_accepted:", args.guest?.terms_accepted);
-  console.log("[BOOKING] guest.email:", args.guest?.email);
   if (!HAS_BACKEND) {
     await sleep(400);
     return {
@@ -133,7 +127,6 @@ export async function createOrder(args: {
   guest: Guest;
   turnstile_token: string;
 }): Promise<{ order_id: string; cancel_token: string; expires_at: string }> {
-  console.log("ORDER PAYLOAD:", JSON.stringify(args));
   if (!HAS_BACKEND) {
     await sleep(400);
     return {

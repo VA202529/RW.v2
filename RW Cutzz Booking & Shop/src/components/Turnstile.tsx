@@ -24,7 +24,6 @@ export function Turnstile({ onToken }: { onToken: (t: string) => void }) {
     let cancelled = false;
     let retry: number | undefined;
     const setToken = (token: string) => {
-      console.log("Turnstile token set:", token.substring(0, 20));
       onToken(token);
     };
 

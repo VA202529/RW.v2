@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Instagram } from "lucide-react";
-import { INSTAGRAM_URL, TIKTOK_URL, OPENING_HOURS } from "@/lib/env";
+import { ADDRESS, INSTAGRAM_URL, TIKTOK_URL, OPENING_HOURS } from "@/lib/env";
 
 export function SiteFooter() {
   return (
@@ -22,11 +22,7 @@ export function SiteFooter() {
           <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-3">
             Adres
           </p>
-          <p className="text-sm">
-            [ADRES]
-            <br />
-            Nederland
-          </p>
+          {ADDRESS ? <p className="text-sm whitespace-pre-line">{ADDRESS}</p> : null}
         </div>
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-3">

@@ -62,7 +62,6 @@ export function GuestForm({
     if (!terms) return setErr("Ga akkoord met de voorwaarden om verder te gaan.");
     if (!phoneIsEmpty && !phoneIsValid) return setErr("Vul een geldig telefoonnummer in (bijv. 0612345678).");
     const turnstileToken = tokenRef.current || token;
-    console.log("Submitting with token:", turnstileToken?.substring(0, 20));
     if (!turnstileToken) return setErr("Wacht op de beveiligingscheck.");
     onSubmit(
       {
