@@ -1,4 +1,4 @@
-import { HAS_BACKEND, SUPABASE_ANON_KEY } from "@/lib/env";
+import { HAS_BACKEND, SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/env";
 import { supabase } from "@/lib/supabase";
 import { ApiError } from "./types";
 import type {
@@ -50,7 +50,30 @@ export async function getSlots(args: {
     await sleep(200);
     return mockSlots(args.from, args.to);
   }
-  const data = await invoke<{ slots: Array<string | { starts_at: string }> }>("get-slots", args);
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    throw new ApiError("Geen backend geconfigureerd.", { code: "NO_BACKEND" });
+  }
+  const body = {
+    service_id: args.service_id,
+    from: args.from.slice(0, 10),
+    to: args.to.slice(0, 10),
+  };
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/get-slots`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify(body),
+  });
+  const data = (await res.json()) as { slots?: Array<string | { starts_at: string }>; code?: string };
+  if (!res.ok) {
+    throw new ApiError("Kon beschikbare tijden niet laden.", {
+      code: data.code,
+      status: res.status,
+    });
+  }
+  if (!data.slots) return [];
   return data.slots.map((slot) => (typeof slot === "string" ? slot : slot.starts_at));
 }
 

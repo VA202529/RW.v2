@@ -302,15 +302,10 @@ function Step2({
     return Array.from({ length: 42 }, (_, i) => addDays(start, i));
   }, [monthCursor]);
 
-  const from = new Date(date);
-  from.setHours(0, 0, 0, 0);
-  const to = new Date(date);
-  to.setHours(23, 59, 59, 999);
-
   const { data: slots = [], isLoading } = useQuery({
     queryKey: ["slots", serviceId, date],
     queryFn: () =>
-      getSlots({ service_id: serviceId, from: from.toISOString(), to: to.toISOString() }),
+      getSlots({ service_id: serviceId, from: date, to: date }),
   });
 
   const weekdays = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
