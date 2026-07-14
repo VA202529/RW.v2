@@ -23,15 +23,19 @@ export function Turnstile({ onToken }: { onToken: (t: string) => void }) {
   useEffect(() => {
     let cancelled = false;
     let retry: number | undefined;
+    const setToken = (token: string) => {
+      console.log("Turnstile token set:", token.substring(0, 20));
+      onToken(token);
+    };
 
     if (shouldBypassTurnstile) {
-      onToken(TURNSTILE_BYPASS_TOKEN);
+      setToken(TURNSTILE_BYPASS_TOKEN);
       return undefined;
     }
 
     if (!TURNSTILE_SITE_KEY) {
       // In mock mode, immediately return a mock token
-      onToken("mock-turnstile-token");
+      setToken("mock-turnstile-token");
       return undefined;
     }
 
@@ -51,7 +55,7 @@ export function Turnstile({ onToken }: { onToken: (t: string) => void }) {
         renderStartedRef.current = true;
         widgetIdRef.current = window.turnstile.render(ref.current, {
           sitekey: TURNSTILE_SITE_KEY!,
-          callback: (t: string) => onToken(t),
+          callback: (t: string) => setToken(t),
         });
       } else if (!window.turnstile) {
         retry = window.setTimeout(tryRender, 200);

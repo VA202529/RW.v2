@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { Turnstile } from "@/components/Turnstile";
 import type { Guest } from "@/lib/api/types";
@@ -21,6 +21,7 @@ export function GuestForm({
   const [marketing, setMarketing] = useState(!!initial?.marketing_email_opt_in);
   const [terms, setTerms] = useState(false);
   const [token, setToken] = useState<string>("");
+  const tokenRef = useRef("");
   const [err, setErr] = useState<string | null>(null);
 
   const phoneFilled = phone.trim().length >= 6;
@@ -31,7 +32,9 @@ export function GuestForm({
     if (!name.trim()) return setErr("Vul je naam in.");
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return setErr("Vul een geldig e-mailadres in.");
     if (!terms) return setErr("Ga akkoord met de voorwaarden om verder te gaan.");
-    if (!token) return setErr("Wacht op de beveiligingscheck.");
+    const turnstileToken = tokenRef.current || token;
+    console.log("Submitting with token:", turnstileToken?.substring(0, 20));
+    if (!turnstileToken) return setErr("Wacht op de beveiligingscheck.");
     onSubmit(
       {
         full_name: name.trim(),
@@ -41,7 +44,7 @@ export function GuestForm({
         marketing_email_opt_in: marketing,
         terms_accepted: true,
       },
-      token,
+      turnstileToken,
     );
   }
 
@@ -127,7 +130,12 @@ export function GuestForm({
         </span>
       </label>
 
-      <Turnstile onToken={setToken} />
+      <Turnstile
+        onToken={(value) => {
+          tokenRef.current = value;
+          setToken(value);
+        }}
+      />
 
       {err && <p className="text-sm text-red-600">{err}</p>}
 
