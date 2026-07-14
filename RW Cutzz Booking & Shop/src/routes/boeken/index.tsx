@@ -149,6 +149,11 @@ function Boeken() {
               onBack={() => dispatch({ type: "back" })}
               onSubmit={async (g, t) => {
                 try {
+                  console.log('STATE BEFORE HOLD:', JSON.stringify({
+                    slot: state.slot,
+                    service_id: selectedService?.id,
+                    service_defined: !!selectedService,
+                  }));
                   const res = await createBookingHold({
                     service_id: selectedService.id,
                     starts_at: state.slot!,

@@ -79,6 +79,12 @@ export async function createBookingHold(args: {
   guest: Guest;
   turnstile_token: string;
 }): Promise<{ booking_id: string; cancel_token: string; expires_at: string }> {
+  console.log('FINAL PAYLOAD TO API:', JSON.stringify({
+    service_id: args.service_id,
+    starts_at: args.starts_at,
+    guest: args.guest,
+    turnstile_token: args.turnstile_token?.substring(0, 20),
+  }));
   if (!HAS_BACKEND) {
     await sleep(400);
     return {
