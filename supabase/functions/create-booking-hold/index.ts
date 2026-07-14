@@ -26,6 +26,9 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
     console.log("REQUEST BODY:", JSON.stringify(body));
+    console.log("FULL BODY:", JSON.stringify(body));
+    console.log("BODY KEYS:", Object.keys(body ?? {}));
+    console.log("GUEST:", JSON.stringify(body?.guest));
     const ip = req.headers.get("cf-connecting-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
     const validTurnstile = await verifyTurnstile(body.turnstile_token, ip);
     if (!validTurnstile) return json({ code: "INVALID_TURNSTILE" }, 403);
@@ -47,16 +50,21 @@ Deno.serve(async (req) => {
     const status = data.status ?? 200;
     const sessionIds = data.superseded_checkout_session_ids ?? [];
     if (Array.isArray(sessionIds) && sessionIds.length > 0) {
-      const stripe = stripeClient();
-      const account = connectedAccount();
-      await Promise.allSettled(
-        sessionIds.map((id) => stripe.checkout.sessions.expire(id, {}, { stripeAccount: account }))
-      );
+      try {
+        const stripe = stripeClient();
+        const account = connectedAccount();
+        await Promise.allSettled(
+          sessionIds.map((id) => stripe.checkout.sessions.expire(id, {}, { stripeAccount: account }))
+        );
+      } catch (stripeError) {
+        console.error("Stripe expire failed (non-fatal):", stripeError);
+        // Non-fatal: booking hold already created successfully.
+      }
     }
 
     return json(data, status);
   } catch (error) {
-    console.error(error);
-    return json({ code: "SERVER_ERROR" }, 500);
+    console.error("CRASH:", error);
+    return json({ code: "SERVER_ERROR", detail: String(error), stack: (error as Error)?.stack }, 500);
   }
 });
