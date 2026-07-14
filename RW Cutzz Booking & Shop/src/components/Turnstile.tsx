@@ -1,6 +1,10 @@
 import { useEffect, useRef } from "react";
 import { TURNSTILE_SITE_KEY } from "@/lib/env";
 
+const TURNSTILE_BYPASS_TOKEN = "XXXX.DUMMY.TOKEN.XXXX";
+const usesTestSiteKey = TURNSTILE_SITE_KEY?.startsWith("1x00000000") ?? false;
+const shouldBypassTurnstile = import.meta.env.DEV || usesTestSiteKey;
+
 declare global {
   interface Window {
     turnstile?: {
@@ -19,6 +23,11 @@ export function Turnstile({ onToken }: { onToken: (t: string) => void }) {
   useEffect(() => {
     let cancelled = false;
     let retry: number | undefined;
+
+    if (shouldBypassTurnstile) {
+      onToken(TURNSTILE_BYPASS_TOKEN);
+      return undefined;
+    }
 
     if (!TURNSTILE_SITE_KEY) {
       // In mock mode, immediately return a mock token
@@ -62,7 +71,7 @@ export function Turnstile({ onToken }: { onToken: (t: string) => void }) {
     };
   }, [onToken]);
 
-  if (!TURNSTILE_SITE_KEY) {
+  if (shouldBypassTurnstile || !TURNSTILE_SITE_KEY) {
     return (
       <div className="border border-dashed border-brand-text/20 rounded p-4 bg-brand-surface text-xs text-brand-muted">
         Beveiligingscheck (Turnstile) — geconfigureerd na deploy.
