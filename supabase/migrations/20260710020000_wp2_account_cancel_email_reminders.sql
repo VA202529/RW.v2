@@ -24,7 +24,7 @@ returns text
 language sql
 immutable
 as $$
-  select encode(digest(p_token, 'sha256'), 'hex')
+  select encode(extensions.digest(p_token, 'sha256'), 'hex')
 $$;
 
 create or replace function public.wp1_create_booking_hold(

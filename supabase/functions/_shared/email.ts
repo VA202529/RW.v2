@@ -1,5 +1,5 @@
 import { Resend } from "npm:resend@4.1.2";
-import { render } from "npm:@react-email/render@1.0.5";
+import { renderToStaticMarkup } from "npm:react-dom@18.3.1/server";
 import { serviceClient } from "./supabase.ts";
 import { booking_confirmation } from "./emails/booking_confirmation.tsx";
 import { booking_reminder_48h } from "./emails/booking_reminder_48h.tsx";
@@ -50,7 +50,7 @@ export async function sendTransactionalEmail(input: {
   }
 
   const rendered = factory({ ...(input.data ?? {}), public_site_url: publicSiteUrl });
-  const html = await render(rendered.html);
+  const html = renderEmailHtml(rendered.html);
   const resend = new Resend(apiKey);
   const { data, error } = await resend.emails.send({
     from,
@@ -69,6 +69,11 @@ export async function sendTransactionalEmail(input: {
 
   await logMessage(supabase, input, "sent", data?.id);
   return { ok: true, id: data?.id };
+}
+
+function renderEmailHtml(html: unknown) {
+  if (typeof html === "string") return html;
+  return `<!doctype html>${renderToStaticMarkup(html as any)}`;
 }
 
 async function logMessage(supabase: ReturnType<typeof serviceClient>, input: any, status: "sent" | "failed", providerId?: string) {
