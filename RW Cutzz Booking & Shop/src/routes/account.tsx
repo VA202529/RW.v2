@@ -101,12 +101,35 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["account"], queryFn: getAccountData });
 
-  if (isLoading || !data) {
-    return <div className="h-96 bg-brand-surface animate-pulse rounded" />;
+  if (isLoading) {
+    return (
+      <div className="h-96 bg-brand-surface animate-pulse rounded flex items-center justify-center text-sm text-brand-muted">
+        Accountgegevens laden...
+      </div>
+    );
   }
 
-  const { customer, upcoming_bookings, past_bookings, credit_cents, orders, reviews, notification_prefs } =
-    data;
+  if (!data?.customer) {
+    return <EmptyState title="We konden je accountgegevens niet laden." />;
+  }
+
+  const {
+    customer,
+    upcoming_bookings = [],
+    past_bookings = [],
+    credit_cents = 0,
+    orders = [],
+    reviews = [],
+    notification_prefs = {
+      whatsapp_opt_in: false,
+      marketing_email_opt_in: false,
+    },
+  } = data;
+
+  const upcomingCount = upcoming_bookings?.length ?? 0;
+  const pastCount = past_bookings?.length ?? 0;
+  const orderCount = orders?.length ?? 0;
+  const reviewCount = reviews?.length ?? 0;
 
   return (
     <div className="grid gap-10">
@@ -131,7 +154,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
       {/* Upcoming */}
       <section>
         <h2 className="font-display text-2xl font-bold mb-4">Aankomende afspraken</h2>
-        {upcoming_bookings.length === 0 ? (
+        {upcomingCount === 0 ? (
           <EmptyState title="Geen aankomende afspraken." />
         ) : (
           <div className="grid gap-3">
@@ -195,7 +218,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
       {/* History */}
       <section>
         <h2 className="font-display text-2xl font-bold mb-4">Bezoekhistorie</h2>
-        {past_bookings.length === 0 ? (
+        {pastCount === 0 ? (
           <EmptyState title="Nog geen bezoeken." />
         ) : (
           <ul className="divide-y divide-brand-text/10 border border-brand-text/10 rounded bg-brand-surface">
@@ -227,7 +250,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
       {/* Orders */}
       <section>
         <h2 className="font-display text-2xl font-bold mb-4">Bestellingen</h2>
-        {orders.length === 0 ? (
+        {orderCount === 0 ? (
           <EmptyState title="Nog geen bestellingen." />
         ) : (
           <div className="grid gap-3">
@@ -276,7 +299,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
       {/* Reviews */}
       <section>
         <h2 className="font-display text-2xl font-bold mb-4">Mijn reviews</h2>
-        {reviews.length === 0 ? (
+        {reviewCount === 0 ? (
           <EmptyState title="Nog geen reviews geschreven." />
         ) : (
           <div className="grid gap-3">
