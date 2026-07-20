@@ -127,7 +127,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
   } = data;
 
   const visiblePastBookings = past_bookings.filter((booking) =>
-    ["confirmed", "completed", "cancelled", "no_show"].includes(booking.status),
+    ["confirmed", "cancelled", "no_show"].includes(booking.status),
   );
   const upcomingCount = upcoming_bookings?.length ?? 0;
   const pastCount = visiblePastBookings?.length ?? 0;
@@ -237,7 +237,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
                   <span className="text-[10px] uppercase tracking-widest text-brand-muted">
                     {bookingStatusLabel(b.status)}
                   </span>
-                  {(b.status === "confirmed" || b.status === "completed") && !b.has_review && (
+                  {b.status === "confirmed" && !b.has_review && (
                     <button
                       onClick={() => (window.location.href = `/review/${b.id}?token=demo`)}
                       className="text-[10px] font-bold uppercase tracking-widest text-brand-accent"
