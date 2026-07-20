@@ -126,11 +126,15 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
     },
   } = data;
 
+  const visiblePastBookings = past_bookings.filter((booking) =>
+    ["confirmed", "completed", "cancelled", "no_show"].includes(booking.status),
+  );
   const upcomingCount = upcoming_bookings?.length ?? 0;
-  const pastCount = past_bookings?.length ?? 0;
+  const pastCount = visiblePastBookings?.length ?? 0;
   const orderCount = orders?.length ?? 0;
   const reviewCount = reviews?.length ?? 0;
-  const visitCount = customer.visit_count ?? 0;
+  const visitCount = visiblePastBookings.filter((booking) => booking.status === "confirmed")
+    .length;
 
   return (
     <div className="grid gap-10">
@@ -223,7 +227,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
           <EmptyState title="Nog geen bezoeken." />
         ) : (
           <ul className="divide-y divide-brand-text/10 border border-brand-text/10 rounded bg-brand-surface">
-            {past_bookings.map((b) => (
+            {visiblePastBookings.map((b) => (
               <li key={b.id} className="p-4 flex justify-between items-center gap-4">
                 <div>
                   <p className="text-sm font-medium">{b.service_name}</p>
@@ -231,9 +235,9 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] uppercase tracking-widest text-brand-muted">
-                    {b.status === "completed" ? "Afgerond ✓" : b.status}
+                    {bookingStatusLabel(b.status)}
                   </span>
-                  {b.status === "completed" && !b.has_review && (
+                  {(b.status === "confirmed" || b.status === "completed") && !b.has_review && (
                     <button
                       onClick={() => (window.location.href = `/review/${b.id}?token=demo`)}
                       className="text-[10px] font-bold uppercase tracking-widest text-brand-accent"
@@ -349,6 +353,17 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
       </section>
     </div>
   );
+}
+
+function bookingStatusLabel(status: string) {
+  const labels: Record<string, string> = {
+    confirmed: "Voltooid",
+    completed: "Voltooid",
+    cancelled: "Geannuleerd",
+    superseded: "Verlopen",
+    no_show: "Niet verschenen",
+  };
+  return labels[status] ?? status;
 }
 
 function NotificationPrefs({

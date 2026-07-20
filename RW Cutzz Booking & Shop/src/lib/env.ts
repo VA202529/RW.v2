@@ -4,10 +4,8 @@ export const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as str
 export const OPENING_HOURS =
   (import.meta.env.VITE_OPENING_HOURS as string | undefined) ?? "Di–Za 09:00–18:00";
 export const ADDRESS = import.meta.env.VITE_ADDRESS as string | undefined;
-export const INSTAGRAM_URL =
-  (import.meta.env.VITE_INSTAGRAM_URL as string | undefined) ?? "https://instagram.com";
-export const TIKTOK_URL =
-  (import.meta.env.VITE_TIKTOK_URL as string | undefined) ?? "https://tiktok.com";
+export const INSTAGRAM_URL = import.meta.env.VITE_INSTAGRAM_URL as string | undefined;
+export const TIKTOK_URL = import.meta.env.VITE_TIKTOK_URL as string | undefined;
 export const SNAPCHAT_URL = import.meta.env.VITE_SNAPCHAT_URL as string | undefined;
 
 export const HAS_BACKEND = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);

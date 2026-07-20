@@ -50,7 +50,7 @@ export type PastBooking = {
   id: string;
   service_name: string;
   starts_at: string;
-  status: "completed" | "cancelled" | "no_show";
+  status: "confirmed" | "completed" | "cancelled" | "no_show" | "superseded";
   has_review: boolean;
 };
 

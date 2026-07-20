@@ -2,7 +2,17 @@ import { Link } from "@tanstack/react-router";
 import { Instagram } from "lucide-react";
 import { ADDRESS, INSTAGRAM_URL, OPENING_HOURS, SNAPCHAT_URL, TIKTOK_URL } from "@/lib/env";
 
+function formatAddress(address?: string) {
+  if (!address) return "";
+  return address
+    .replace(/\s+/g, " ")
+    .replace(/94\s*,?\s*1025/i, "94, 1025")
+    .trim();
+}
+
 export function SiteFooter() {
+  const address = formatAddress(ADDRESS);
+
   return (
     <footer className="mt-auto bg-brand-dark text-white/80">
       <div className="max-w-7xl mx-auto px-6 py-16 grid gap-12 md:grid-cols-4">
@@ -22,7 +32,7 @@ export function SiteFooter() {
           <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-3">
             Adres
           </p>
-          {ADDRESS ? <p className="text-sm whitespace-pre-line">{ADDRESS}</p> : null}
+          {address ? <p className="text-sm whitespace-pre-line">{address}</p> : null}
         </div>
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-3">
