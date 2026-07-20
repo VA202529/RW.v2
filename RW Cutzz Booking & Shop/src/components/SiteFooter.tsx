@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { Instagram } from "lucide-react";
-import { ADDRESS, INSTAGRAM_URL, TIKTOK_URL, OPENING_HOURS } from "@/lib/env";
+import { ADDRESS, INSTAGRAM_URL, OPENING_HOURS, SNAPCHAT_URL, TIKTOK_URL } from "@/lib/env";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-24 bg-brand-dark text-white/80">
+    <footer className="mt-auto bg-brand-dark text-white/80">
       <div className="max-w-7xl mx-auto px-6 py-16 grid gap-12 md:grid-cols-4">
         <div>
           <p className="font-display text-2xl font-extrabold tracking-tighter text-white">
@@ -29,24 +29,39 @@ export function SiteFooter() {
             Volg ons
           </p>
           <div className="flex gap-3">
-            <a
-              href={INSTAGRAM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-9 h-9 border border-white/20 flex items-center justify-center hover:bg-brand-accent hover:border-brand-accent transition"
-              aria-label="Instagram"
-            >
-              <Instagram className="w-4 h-4" />
-            </a>
-            <a
-              href={TIKTOK_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-9 h-9 border border-white/20 flex items-center justify-center hover:bg-brand-accent hover:border-brand-accent transition text-xs font-bold"
-              aria-label="TikTok"
-            >
-              TT
-            </a>
+            {INSTAGRAM_URL ? (
+              <a
+                href={INSTAGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="min-h-11 min-w-11 border border-white/20 flex items-center justify-center hover:bg-brand-accent hover:border-brand-accent transition"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-4 h-4" />
+              </a>
+            ) : null}
+            {TIKTOK_URL ? (
+              <a
+                href={TIKTOK_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="min-h-11 min-w-11 border border-white/20 flex items-center justify-center hover:bg-brand-accent hover:border-brand-accent transition text-xs font-bold"
+                aria-label="TikTok"
+              >
+                TikTok
+              </a>
+            ) : null}
+            {SNAPCHAT_URL ? (
+              <a
+                href={SNAPCHAT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="min-h-11 min-w-11 border border-white/20 flex items-center justify-center hover:bg-brand-accent hover:border-brand-accent transition text-xs font-bold"
+                aria-label="Snapchat"
+              >
+                Snap
+              </a>
+            ) : null}
           </div>
         </div>
       </div>

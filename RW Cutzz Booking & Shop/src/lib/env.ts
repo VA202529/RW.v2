@@ -8,6 +8,7 @@ export const INSTAGRAM_URL =
   (import.meta.env.VITE_INSTAGRAM_URL as string | undefined) ?? "https://instagram.com";
 export const TIKTOK_URL =
   (import.meta.env.VITE_TIKTOK_URL as string | undefined) ?? "https://tiktok.com";
+export const SNAPCHAT_URL = import.meta.env.VITE_SNAPCHAT_URL as string | undefined;
 
 export const HAS_BACKEND = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 

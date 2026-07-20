@@ -28,7 +28,7 @@ function Checkout() {
   const total = lines.reduce((s, l) => s + l.product.price_cents * l.quantity, 0);
 
   return (
-    <div className="min-h-screen bg-brand-bg">
+    <div className="min-h-screen bg-brand-bg flex flex-col">
       <SiteHeader />
       <section className="pt-28 pb-20 px-6">
         <div className="max-w-4xl mx-auto">

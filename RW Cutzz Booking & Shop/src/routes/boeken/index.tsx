@@ -91,7 +91,7 @@ function Boeken() {
   const selectedService = services.find((s) => s.id === state.service_id);
 
   return (
-    <div className="min-h-screen bg-brand-bg text-brand-text">
+    <div className="min-h-screen bg-brand-bg text-brand-text flex flex-col">
       <SiteHeader />
       <section className="pt-28 pb-20 px-6">
         <div className="max-w-5xl mx-auto">
@@ -512,7 +512,7 @@ function Step4({
           </div>
           <div className="flex justify-between">
             <span>Locatie</span>
-            <span className="font-medium">RW CUTZZ, [ADRES]</span>
+            <span className="font-medium">RW CUTZZ, Mariëndaal 94, 1025 BW Amsterdam</span>
           </div>
           <div className="flex justify-between pt-2 border-t border-brand-text/10">
             <span>Aanbetaling</span>

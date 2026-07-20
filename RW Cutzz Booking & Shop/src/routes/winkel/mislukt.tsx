@@ -6,7 +6,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 export const Route = createFileRoute("/winkel/mislukt")({
   head: () => ({ meta: [{ title: "Betaling mislukt — RW CUTZZ" }] }),
   component: () => (
-    <div className="min-h-screen bg-brand-bg">
+    <div className="min-h-screen bg-brand-bg flex flex-col">
       <SiteHeader />
       <section className="pt-32 pb-20 px-6 text-center max-w-2xl mx-auto">
         <AlertCircle className="w-16 h-16 text-brand-accent mx-auto mb-4" />

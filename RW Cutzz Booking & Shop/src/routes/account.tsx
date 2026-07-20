@@ -27,9 +27,9 @@ function Account() {
   const { signedIn, signIn, signOut, sendMagicLink, hasBackend } = useMockAuth();
 
   return (
-    <div className="min-h-screen bg-brand-bg">
+    <div className="min-h-screen bg-brand-bg flex flex-col">
       <SiteHeader />
-      <section className="pt-28 pb-20 px-6 max-w-4xl mx-auto">
+      <section className="flex-1 pt-28 pb-20 px-6 max-w-4xl mx-auto w-full">
         {!signedIn ? <SignInBlock onDemo={signIn} onMagicLink={sendMagicLink} hasBackend={hasBackend} /> : <Dashboard onSignOut={signOut} />}
       </section>
       <SiteFooter />
@@ -130,6 +130,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
   const pastCount = past_bookings?.length ?? 0;
   const orderCount = orders?.length ?? 0;
   const reviewCount = reviews?.length ?? 0;
+  const visitCount = customer.visit_count ?? 0;
 
   return (
     <div className="grid gap-10">
@@ -140,7 +141,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
             {customer.full_name}
           </h1>
           <p className="text-sm text-brand-muted mt-1">
-            Je bent {customer.visit_count} keer geweest ✂️
+            Je bent {visitCount} keer geweest
           </p>
         </div>
         <button

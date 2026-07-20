@@ -23,7 +23,7 @@ function ProductPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-brand-bg">
+      <div className="min-h-screen bg-brand-bg flex flex-col">
         <SiteHeader />
         <div className="pt-32 max-w-4xl mx-auto px-6">
           <div className="h-96 bg-brand-surface animate-pulse rounded" />
@@ -38,7 +38,7 @@ function ProductPage() {
   const soldOut = p.stock === 0;
 
   return (
-    <div className="min-h-screen bg-brand-bg">
+    <div className="min-h-screen bg-brand-bg flex flex-col">
       <SiteHeader />
       <section className="pt-28 pb-20 px-6">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10">

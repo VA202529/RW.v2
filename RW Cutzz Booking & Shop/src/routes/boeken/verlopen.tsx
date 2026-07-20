@@ -10,7 +10,7 @@ export const Route = createFileRoute("/boeken/verlopen")({
 
 function Expired() {
   return (
-    <div className="min-h-screen bg-brand-bg">
+    <div className="min-h-screen bg-brand-bg flex flex-col">
       <SiteHeader />
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-2xl mx-auto text-center">

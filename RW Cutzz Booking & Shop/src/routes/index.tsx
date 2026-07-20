@@ -7,7 +7,7 @@ import { RelativeDate } from "@/components/RelativeDate";
 import { EmptyState } from "@/components/EmptyState";
 import { getServices, getPublicReviews } from "@/lib/api/client";
 import { euros, depositCents } from "@/lib/format";
-import { OPENING_HOURS } from "@/lib/env";
+import { ADDRESS, OPENING_HOURS } from "@/lib/env";
 import heroImg from "@/assets/hero-cut.jpg";
 
 export const Route = createFileRoute("/")({
@@ -31,7 +31,7 @@ function Home() {
   const { data: reviews = [] } = useQuery({ queryKey: ["reviews"], queryFn: getPublicReviews });
 
   return (
-    <div className="min-h-screen bg-brand-bg text-brand-text">
+    <div className="min-h-screen bg-brand-bg text-brand-text flex flex-col">
       <SiteHeader />
 
       {/* Hero (dark) */}
@@ -157,7 +157,7 @@ function Home() {
               </div>
               <div>
                 <p className="text-xs uppercase tracking-widest text-brand-muted mb-1">Adres</p>
-                <p>[ADRES]</p>
+                <p>{ADDRESS}</p>
               </div>
             </div>
             <div className="mt-6 aspect-[16/9] bg-brand-bg rounded overflow-hidden border border-brand-text/10">

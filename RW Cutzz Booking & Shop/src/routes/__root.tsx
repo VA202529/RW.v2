@@ -118,7 +118,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="min-h-dvh">
         {children}
         <Scripts />
       </body>
@@ -132,7 +132,9 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
-        <Outlet />
+        <main className="min-h-dvh flex flex-col">
+          <Outlet />
+        </main>
         <CartDrawer />
         <CookieConsent />
         <Toaster position="top-center" richColors />

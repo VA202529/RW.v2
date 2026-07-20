@@ -25,7 +25,7 @@ function Winkel() {
   const { add, openDrawer } = useCart();
 
   return (
-    <div className="min-h-screen bg-brand-bg">
+    <div className="min-h-screen bg-brand-bg flex flex-col">
       <SiteHeader />
 
       <div className="fixed top-16 md:top-20 left-0 right-0 z-30 bg-brand-dark text-white text-center text-xs py-2 px-4">

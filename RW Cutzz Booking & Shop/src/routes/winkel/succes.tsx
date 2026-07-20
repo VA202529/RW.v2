@@ -6,7 +6,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 export const Route = createFileRoute("/winkel/succes")({
   head: () => ({ meta: [{ title: "Bestelling geplaatst — RW CUTZZ" }] }),
   component: () => (
-    <div className="min-h-screen bg-brand-bg">
+    <div className="min-h-screen bg-brand-bg flex flex-col">
       <SiteHeader />
       <section className="pt-32 pb-20 px-6 text-center max-w-2xl mx-auto">
         <CheckCircle2 className="w-16 h-16 text-brand-accent mx-auto mb-4" />
