@@ -61,9 +61,16 @@ Deno.serve(async (req) => {
 
     const { data: rules, error: rulesError } = await supabase
       .from("availability_rules")
-      .select("weekday,opens_at,closes_at")
+      .select("weekday,opens_at,closes_at,max_bookings_per_day")
       .eq("is_active", true);
     if (rulesError) throw rulesError;
+
+    const { data: overrides, error: overridesError } = await supabase
+      .from("day_overrides")
+      .select("override_date,is_closed,opens_at,closes_at,max_bookings")
+      .gte("override_date", from)
+      .lte("override_date", to);
+    if (overridesError) throw overridesError;
 
     const rangeStart = new Date(`${from}T00:00:00.000Z`);
     const rangeEnd = new Date(new Date(`${to}T00:00:00.000Z`).getTime() + 24 * 60 * 60 * 1000);
@@ -84,6 +91,15 @@ Deno.serve(async (req) => {
 
     const slotSpan = service.duration_minutes + service.buffer_minutes;
     const results: Array<{ starts_at: string; local_date: string; local_time: string }> = [];
+    const overridesByDate = new Map((overrides ?? []).map((override) => [override.override_date, override]));
+    const bookingCountsByDate = new Map<string, number>();
+
+    for (const booking of bookings ?? []) {
+      const status = booking.status;
+      if (status !== "confirmed" && status !== "pending_payment") continue;
+      const localDate = localParts(new Date(booking.starts_at)).date;
+      bookingCountsByDate.set(localDate, (bookingCountsByDate.get(localDate) ?? 0) + 1);
+    }
 
     for (let cursor = rangeStart.getTime(); cursor < rangeEnd.getTime(); cursor += 15 * 60 * 1000) {
       const start = new Date(cursor);
@@ -92,10 +108,20 @@ Deno.serve(async (req) => {
       if (local.date < from || local.date > to) continue;
 
       const rule = rules?.find((r) => r.weekday === local.weekday);
-      if (!rule) continue;
+      const override = overridesByDate.get(local.date);
+      if (override?.is_closed) continue;
+      if (!rule && !override) continue;
+
+      const opensAt = override?.opens_at ?? rule?.opens_at;
+      const closesAt = override?.closes_at ?? rule?.closes_at;
+      if (!opensAt || !closesAt) continue;
+
+      const maxBookings =
+        override?.max_bookings ?? rule?.max_bookings_per_day ?? null;
+      if (maxBookings !== null && (bookingCountsByDate.get(local.date) ?? 0) >= maxBookings) continue;
 
       const startMinute = minutes(local.time);
-      if (startMinute < minutes(rule.opens_at) || startMinute + slotSpan > minutes(rule.closes_at)) continue;
+      if (startMinute < minutes(opensAt) || startMinute + slotSpan > minutes(closesAt)) continue;
 
       const busy = [...(bookings ?? []), ...(blocked ?? [])].some((item) =>
         overlaps(start.getTime(), end.getTime(), new Date(item.starts_at).getTime(), new Date(item.ends_at).getTime())
