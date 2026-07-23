@@ -417,3 +417,107 @@ label {
     text-decoration: none;
   }
 }
+
+/* BarberFlow Admin v1 visual layer */
+:root {
+  --admin-bg: #f6f7fb;
+  --admin-card: #ffffff;
+  --admin-border: #e5e7eb;
+  --admin-muted: #667085;
+  --admin-primary: #2563eb;
+  --admin-primary-soft: #dbeafe;
+  --admin-danger: #dc2626;
+}
+
+body {
+  background: var(--admin-bg);
+}
+
+.page,
+.adminShell {
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 30rem),
+    var(--admin-bg);
+}
+
+.state,
+.adminMain > section,
+.modalPanel {
+  border-color: var(--admin-border);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+}
+
+.adminSide {
+  border-right-color: var(--admin-border);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(18px);
+}
+
+.brand,
+.stateIcon,
+.metrics strong {
+  color: var(--admin-primary);
+}
+
+.adminNav,
+.primary,
+.secondary,
+.danger,
+.bookingBlock,
+.tableRow,
+.blockedBar,
+input,
+select,
+textarea,
+.editor,
+.preview,
+.editorToolbar button {
+  border-radius: 14px;
+}
+
+.adminNav {
+  color: var(--admin-muted);
+}
+
+.adminNav.active {
+  background: var(--admin-primary-soft);
+  color: var(--admin-primary);
+}
+
+.primary {
+  background: var(--admin-primary);
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.2);
+}
+
+.danger {
+  color: var(--admin-danger);
+}
+
+.bookingBlock,
+.tableRow,
+.blockedBar,
+.metrics div {
+  border-color: var(--admin-border);
+}
+
+.bookingBlock,
+.tableRow {
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bookingBlock:hover,
+.tableRow:hover {
+  border-color: rgba(37, 99, 235, 0.35);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+
+.adminHeader h1 {
+  margin-bottom: 4px;
+}
+
+.adminHeader p {
+  margin: 0;
+}

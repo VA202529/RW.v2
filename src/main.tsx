@@ -78,6 +78,7 @@ function App() {
 
 function AdminPage({ path }: { path: string }) {
   const section = path.split("/")[2] || "agenda";
+  const isLoginRoute = path === "/admin/login";
   const [allowed, setAllowed] = React.useState(false);
   const [checking, setChecking] = React.useState(true);
   const [email, setEmail] = React.useState("");
@@ -92,23 +93,28 @@ function AdminPage({ path }: { path: string }) {
         return;
       }
       const role = (user.app_metadata as { app_role?: string } | undefined)?.app_role;
-      if (role === "admin") setAllowed(true);
+      if (role === "admin") {
+        setAllowed(true);
+        if (isLoginRoute) {
+          window.history.replaceState({}, "", "/admin");
+        }
+      }
       else setDenied(true);
       setChecking(false);
     });
-  }, []);
+  }, [isLoginRoute]);
 
   async function sendLogin() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${window.location.origin}/admin` },
+      options: { emailRedirectTo: `${window.location.origin}/admin/login` },
     });
     if (!error) setSent(true);
   }
 
   if (checking) return <Shell><section className="state"><p>Admin controleren...</p></section></Shell>;
   if (denied) return <Shell><section className="state"><h1>Geen toegang</h1><p>Deze omgeving is alleen beschikbaar voor beheerders.</p></section></Shell>;
-  if (!allowed) {
+  if (!allowed || isLoginRoute) {
     return (
       <Shell>
         <section className="state">
@@ -205,15 +211,56 @@ function ManualBooking({ services, onClose, onDone }: { services: Service[]; onC
 }
 
 function AdminAvailability() {
-  const [data, setData] = React.useState<{ rules: any[]; blocked_slots: any[] }>({ rules: [], blocked_slots: [] });
-  const [rule, setRule] = React.useState({ weekday: 1, opens_at: "09:00", closes_at: "18:00", is_active: true });
+  const [data, setData] = React.useState<{ rules: any[]; blocked_slots: any[]; day_overrides: any[] }>({ rules: [], blocked_slots: [], day_overrides: [] });
+  const [rule, setRule] = React.useState({ id: "", weekday: 1, opens_at: "09:00", closes_at: "18:00", is_active: true, max_bookings_per_day: "" });
   const [block, setBlock] = React.useState({ starts_at: "", ends_at: "", reason: "" });
+  const [override, setOverride] = React.useState({ date: isoDate(), is_closed: false, opens_at: "", closes_at: "", max_bookings: "", note: "" });
+  const [range, setRange] = React.useState({ date_from: isoDate(), date_to: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10) });
   const [conflicts, setConflicts] = React.useState<any[]>([]);
+  const weekdays = ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"];
   React.useEffect(() => { load(); }, []);
-  async function load() { const { data } = await supabase.functions.invoke("admin-manage-availability", { body: { action: "list" } }); if (data?.status === 200) setData(data); }
-  async function saveRule() { await supabase.functions.invoke("admin-manage-availability", { body: { action: "create_rule", payload: rule } }); load(); }
+  async function load() {
+    const { data } = await supabase.functions.invoke("admin-manage-availability", { body: { action: "list", payload: range } });
+    if (data?.status === 200) setData({ rules: data.rules ?? [], blocked_slots: data.blocked_slots ?? [], day_overrides: data.day_overrides ?? [] });
+  }
+  async function saveRule() {
+    const existing = data.rules.find((item) => item.id === rule.id || item.weekday === rule.weekday);
+    const payload = {
+      ...rule,
+      id: existing?.id ?? rule.id,
+      max_bookings_per_day: rule.max_bookings_per_day === "" ? null : Number(rule.max_bookings_per_day),
+    };
+    await supabase.functions.invoke("admin-manage-availability", { body: { action: existing ? "update_rule" : "create_rule", payload } });
+    setRule({ id: "", weekday: 1, opens_at: "09:00", closes_at: "18:00", is_active: true, max_bookings_per_day: "" });
+    load();
+  }
+  async function setMaxBookings(weekday: number, value: string) {
+    await supabase.functions.invoke("admin-manage-availability", {
+      body: { action: "set_max_bookings", weekday, max_bookings_per_day: value === "" ? null : Number(value) },
+    });
+    load();
+  }
   async function addBlock() { const { data } = await supabase.functions.invoke("admin-manage-availability", { body: { action: "create_blocked_slot", payload: { starts_at: new Date(block.starts_at).toISOString(), ends_at: new Date(block.ends_at).toISOString(), reason: block.reason } } }); setConflicts(data?.conflicts ?? []); load(); }
-  return <section><h1>Beschikbaarheid</h1><h2>Openingstijden</h2><div className="actions"><select value={rule.weekday} onChange={e => setRule({ ...rule, weekday: Number(e.target.value) })}>{["Zo","Ma","Di","Wo","Do","Vr","Za"].map((d, i) => <option key={d} value={i}>{d}</option>)}</select><input type="time" value={rule.opens_at} onChange={e => setRule({ ...rule, opens_at: e.target.value })} /><input type="time" value={rule.closes_at} onChange={e => setRule({ ...rule, closes_at: e.target.value })} /><label><input type="checkbox" checked={rule.is_active} onChange={e => setRule({ ...rule, is_active: e.target.checked })} /> Actief</label><button className="primary" onClick={saveRule}>Regel opslaan</button></div><div className="table">{data.rules.map(r => <div className="tableRow" key={r.id}><span>Dag {r.weekday}</span><span>{r.opens_at} - {r.closes_at}</span><span>{r.is_active ? "Actief" : "Uit"}</span></div>)}</div><h2>Blokkades</h2><div className="formGrid"><input type="datetime-local" onChange={(e) => setBlock({ ...block, starts_at: e.target.value })} /><input type="datetime-local" onChange={(e) => setBlock({ ...block, ends_at: e.target.value })} /><input placeholder="Reden" onChange={(e) => setBlock({ ...block, reason: e.target.value })} /></div><button className="primary" onClick={addBlock}>Blokkade toevoegen</button>{conflicts.length > 0 && <div className="notice">Conflicten gevonden: {conflicts.map(c => c.customer_name).join(", ")}. Los deze op via boekingsdetails.</div>}<div className="table">{data.blocked_slots.map(b => <div className="tableRow" key={b.id}><span>{formatLocal(b.starts_at)}</span><span>{formatLocal(b.ends_at)}</span><span>{b.reason}</span></div>)}</div></section>;
+  async function deleteBlock(id: string) { await supabase.functions.invoke("admin-manage-availability", { body: { action: "delete_blocked_slot", payload: { id } } }); load(); }
+  async function saveOverride() {
+    await supabase.functions.invoke("admin-manage-availability", {
+      body: {
+        action: "set_override",
+        date: override.date,
+        is_closed: override.is_closed,
+        opens_at: override.opens_at || undefined,
+        closes_at: override.closes_at || undefined,
+        max_bookings: override.max_bookings === "" ? null : Number(override.max_bookings),
+        note: override.note || undefined,
+      },
+    });
+    load();
+  }
+  async function deleteOverride(date: string) {
+    await supabase.functions.invoke("admin-manage-availability", { body: { action: "delete_override", date } });
+    load();
+  }
+  return <section><div className="adminHeader"><div><h1>Beschikbaarheid</h1><p>Beheer weekrooster, dag-overrides, maximale boekingen per dag en blokkades.</p></div><button className="secondary" onClick={load}>Vernieuwen</button></div><h2>Weekrooster</h2><div className="actions"><select value={rule.weekday} onChange={e => setRule({ ...rule, weekday: Number(e.target.value) })}>{weekdays.map((d, i) => <option key={d} value={i}>{d}</option>)}</select><input type="time" value={rule.opens_at} onChange={e => setRule({ ...rule, opens_at: e.target.value })} /><input type="time" value={rule.closes_at} onChange={e => setRule({ ...rule, closes_at: e.target.value })} /><input type="number" min="0" placeholder="Max boekingen/dag" value={rule.max_bookings_per_day} onChange={e => setRule({ ...rule, max_bookings_per_day: e.target.value })} /><label><input type="checkbox" checked={rule.is_active} onChange={e => setRule({ ...rule, is_active: e.target.checked })} /> Actief</label><button className="primary" onClick={saveRule}>Regel opslaan</button></div><div className="table">{data.rules.map(r => <div className="tableRow" key={r.id}><span>{weekdays[r.weekday] ?? `Dag ${r.weekday}`}</span><span>{r.opens_at} - {r.closes_at}</span><span>{r.is_active ? "Actief" : "Uit"}</span><span>Max: {r.max_bookings_per_day ?? "geen limiet"}</span><input type="number" min="0" placeholder="Nieuw max" onBlur={e => setMaxBookings(r.weekday, e.target.value)} /><button className="secondary" onClick={() => setRule({ id: r.id, weekday: r.weekday, opens_at: r.opens_at?.slice(0, 5), closes_at: r.closes_at?.slice(0, 5), is_active: r.is_active, max_bookings_per_day: r.max_bookings_per_day ?? "" })}>Bewerk</button></div>)}</div><h2>Dag-overrides</h2><div className="actions"><input type="date" value={range.date_from} onChange={e => setRange({ ...range, date_from: e.target.value })} /><input type="date" value={range.date_to} onChange={e => setRange({ ...range, date_to: e.target.value })} /><button className="secondary" onClick={load}>Periode laden</button></div><div className="formGrid"><input type="date" value={override.date} onChange={e => setOverride({ ...override, date: e.target.value })} /><input type="time" value={override.opens_at} disabled={override.is_closed} onChange={e => setOverride({ ...override, opens_at: e.target.value })} /><input type="time" value={override.closes_at} disabled={override.is_closed} onChange={e => setOverride({ ...override, closes_at: e.target.value })} /><input type="number" min="0" placeholder="Max boekingen" value={override.max_bookings} onChange={e => setOverride({ ...override, max_bookings: e.target.value })} /><input placeholder="Notitie" value={override.note} onChange={e => setOverride({ ...override, note: e.target.value })} /><label><input type="checkbox" checked={override.is_closed} onChange={e => setOverride({ ...override, is_closed: e.target.checked })} /> Gesloten</label></div><button className="primary" onClick={saveOverride}>Override opslaan</button><div className="table">{data.day_overrides.map(o => <div className="tableRow" key={o.id}><span>{o.override_date}</span><span>{o.is_closed ? "Gesloten" : `${o.opens_at ?? "-"} - ${o.closes_at ?? "-"}`}</span><span>Max: {o.max_bookings ?? "geen limiet"}</span><span>{o.note ?? ""}</span><button className="danger" onClick={() => deleteOverride(o.override_date)}>Verwijder</button></div>)}</div><h2>Blokkades</h2><div className="formGrid"><input type="datetime-local" onChange={(e) => setBlock({ ...block, starts_at: e.target.value })} /><input type="datetime-local" onChange={(e) => setBlock({ ...block, ends_at: e.target.value })} /><input placeholder="Reden" onChange={(e) => setBlock({ ...block, reason: e.target.value })} /></div><button className="primary" onClick={addBlock}>Blokkade toevoegen</button>{conflicts.length > 0 && <div className="notice">Conflicten gevonden: {conflicts.map(c => c.customer_name).join(", ")}. Los deze op via boekingsdetails.</div>}<div className="table">{data.blocked_slots.map(b => <div className="tableRow" key={b.id}><span>{formatLocal(b.starts_at)}</span><span>{formatLocal(b.ends_at)}</span><span>{b.reason}</span><button className="danger" onClick={() => deleteBlock(b.id)}>Verwijder</button></div>)}</div></section>;
 }
 
 function AdminServices() {
