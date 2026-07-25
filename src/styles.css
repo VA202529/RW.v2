@@ -901,3 +901,448 @@ textarea,
     font-size: 11px;
   }
 }
+
+/* Lovable Admin zip integration: translated from the exported Tailwind 4 theme */
+:root {
+  --admin-bg: #0a0a0a;
+  --admin-card: #141414;
+  --admin-card-soft: #1a1a1a;
+  --admin-border: #242424;
+  --admin-text: #fafafa;
+  --admin-muted: #a3a3a3;
+  --admin-primary: #2b3bef;
+  --admin-primary-soft: rgba(43, 59, 239, 0.16);
+  --admin-success: #4ade80;
+  --admin-warning: #facc15;
+  --admin-danger: #ef4444;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--admin-bg);
+  color: var(--admin-text);
+}
+
+body,
+input,
+select,
+textarea,
+button {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+p,
+label {
+  color: var(--admin-muted);
+}
+
+input,
+select,
+textarea,
+.adminMain input,
+.adminMain select,
+.modalPanel input,
+.modalPanel select {
+  border-color: var(--admin-border);
+  background: var(--admin-card);
+  color: var(--admin-text);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #737373;
+}
+
+.primary {
+  background: var(--admin-primary);
+  color: #fff;
+  box-shadow: 0 14px 34px rgba(43, 59, 239, 0.24);
+}
+
+.secondary {
+  border-color: var(--admin-border);
+  background: var(--admin-card-soft);
+  color: var(--admin-text);
+}
+
+.danger {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+}
+
+.notice,
+.successNotice,
+.dangerNotice {
+  border-color: var(--admin-border);
+  background: var(--admin-card-soft);
+  color: var(--admin-text);
+}
+
+.lovableLogin {
+  background:
+    radial-gradient(circle at 82% 18%, rgba(43, 59, 239, 0.3), transparent 25rem),
+    radial-gradient(circle at 18% 84%, rgba(74, 222, 128, 0.12), transparent 22rem),
+    var(--admin-bg);
+}
+
+.loginHero,
+.loginCard {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(20, 20, 20, 0.82);
+}
+
+.loginCard {
+  color: var(--admin-text);
+}
+
+.loginCard p,
+.loginForm label {
+  color: var(--admin-muted);
+}
+
+.loginBrandMark,
+.loginIcon,
+.lovableBrand span,
+.profileAvatar,
+.moreItem span {
+  background: linear-gradient(135deg, var(--admin-primary), #4ade80);
+  color: #fff;
+}
+
+.loginEyebrow,
+.panelEyebrow {
+  color: #818cf8;
+}
+
+.lovableAdminShell {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 84% 8%, rgba(43, 59, 239, 0.2), transparent 30rem),
+    var(--admin-bg);
+  color: var(--admin-text);
+}
+
+.lovableSidebar {
+  width: auto;
+  border-right-color: var(--admin-border);
+  background: #101010;
+  color: var(--admin-text);
+}
+
+.lovableBrand,
+.sidebarProfile {
+  min-height: 64px;
+}
+
+.lovableBrand small,
+.sidebarProfile small {
+  color: var(--admin-muted);
+}
+
+.lovableNavItem {
+  color: var(--admin-muted);
+}
+
+.lovableNavItem:hover,
+.lovableNavItem.active {
+  background: var(--admin-primary-soft);
+  color: var(--admin-text);
+}
+
+.lovableNavItem.active svg {
+  color: #818cf8;
+}
+
+.sidebarProfile {
+  border-color: var(--admin-border);
+  background: var(--admin-card);
+}
+
+.lovableMain {
+  padding: 0;
+  min-width: 0;
+}
+
+.lovablePanel {
+  min-height: 100vh;
+  border: 0;
+  border-radius: 0;
+  padding: 0 32px 32px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.lovablePanelHeader {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  min-height: 72px;
+  margin: 0 -32px 28px;
+  padding: 16px 32px;
+  border-bottom: 1px solid var(--admin-border);
+  background: rgba(10, 10, 10, 0.84);
+  backdrop-filter: blur(18px);
+}
+
+.lovablePanelHeader h1,
+.lovableMobileHeader h1 {
+  color: var(--admin-text);
+}
+
+.lovablePanelHeader p:not(.panelEyebrow),
+.lovableMobileHeader p {
+  color: var(--admin-muted);
+}
+
+.lovableMobileHeader {
+  display: none;
+}
+
+.calendarList,
+.table,
+.metrics {
+  gap: 12px;
+}
+
+.bookingBlock,
+.tableRow,
+.blockedBar,
+.lovableMetric,
+.modalPanel,
+.editor,
+.preview {
+  border-color: var(--admin-border);
+  background: var(--admin-card);
+  color: var(--admin-text);
+}
+
+.bookingBlock:hover,
+.tableRow:hover {
+  border-color: rgba(43, 59, 239, 0.45);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+}
+
+.blockedBar,
+.lovableEmpty {
+  border-color: var(--admin-border);
+  background: var(--admin-card-soft);
+  color: var(--admin-muted);
+}
+
+.lovableStatus {
+  border-color: var(--admin-border);
+  background: var(--admin-card-soft);
+  color: var(--admin-muted);
+}
+
+.lovableStatus.confirmed,
+.lovableStatus.completed,
+.lovableStatus.paid,
+.lovableStatus.ready_for_pickup,
+.lovableStatus.picked_up {
+  border-color: rgba(74, 222, 128, 0.3);
+  background: rgba(74, 222, 128, 0.12);
+  color: #86efac;
+}
+
+.lovableStatus.cancelled,
+.lovableStatus.no_show {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+}
+
+.lovableStatus.pending_payment {
+  border-color: rgba(250, 204, 21, 0.3);
+  background: rgba(250, 204, 21, 0.12);
+  color: #fde68a;
+}
+
+.lovableMetric strong {
+  color: #818cf8;
+}
+
+.adminChips {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.adminChips button {
+  min-height: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-card);
+  color: var(--admin-muted);
+}
+
+.adminChips button.bg-primary {
+  border-color: var(--admin-primary);
+  background: var(--admin-primary);
+  color: #fff;
+}
+
+.press {
+  transition: transform 120ms ease, opacity 120ms ease, border-color 160ms ease;
+}
+
+.press:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+.bg-card {
+  background: var(--admin-card);
+}
+
+.text-muted-foreground {
+  color: var(--admin-muted);
+}
+
+.text-primary {
+  color: #818cf8;
+}
+
+.bg-primary {
+  background: var(--admin-primary);
+}
+
+.text-primary-foreground {
+  color: #fff;
+}
+
+.border-border {
+  border-color: var(--admin-border);
+}
+
+.lovableBottomNav button {
+  min-height: 62px;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  border: 0;
+  background: transparent;
+  color: var(--admin-muted);
+  font-size: 11px;
+}
+
+.lovableBottomNav a.active,
+.lovableBottomNav button.active {
+  color: #818cf8;
+}
+
+.lovableMoreOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+  flex-direction: column;
+  background: var(--admin-bg);
+  color: var(--admin-text);
+}
+
+.moreHeader {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.moreHeader h2 {
+  margin: 0;
+}
+
+.moreHeader button {
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--admin-card);
+  color: var(--admin-text);
+}
+
+.moreList {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+
+.moreItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--admin-border);
+  border-radius: 18px;
+  background: var(--admin-card);
+  color: var(--admin-text);
+  text-decoration: none;
+}
+
+.moreItem span {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+}
+
+@media (max-width: 820px) {
+  .lovableAdminShell {
+    display: block;
+  }
+
+  .lovablePanel {
+    min-height: 100vh;
+    padding: 0 14px 88px;
+  }
+
+  .lovablePanelHeader {
+    display: none;
+  }
+
+  .lovableMobileHeader {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: block;
+    margin: 0 -14px 16px;
+    padding: calc(env(safe-area-inset-top) + 18px) 16px 14px;
+    border-bottom: 1px solid var(--admin-border);
+    background: rgba(10, 10, 10, 0.88);
+    backdrop-filter: blur(18px);
+  }
+
+  .lovableMobileHeader h1 {
+    margin: 0;
+    font-size: 28px;
+  }
+
+  .lovableMobileHeader p {
+    margin: 4px 0 0;
+    font-size: 12px;
+  }
+
+  .lovableBottomNav {
+    grid-template-columns: repeat(5, 1fr);
+    border-top-color: var(--admin-border);
+    background: rgba(16, 16, 16, 0.96);
+  }
+
+  .lovableBottomNav a {
+    color: var(--admin-muted);
+  }
+
+  .lovableMoreOverlay {
+    display: flex;
+  }
+}

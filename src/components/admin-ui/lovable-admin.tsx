@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
-import { ArrowRight, LockKeyhole, LogOut, Scissors } from "lucide-react";
+import { ArrowRight, LockKeyhole, LogOut, MoreHorizontal, Scissors, X } from "lucide-react";
+import { useState } from "react";
 import type { ReactNode } from "react";
 
 type NavItem = readonly [string, string, LucideIcon];
@@ -20,7 +21,7 @@ export function LovableLogin({
   onSubmit: () => void;
 }) {
   return (
-    <main className="lovableLogin">
+    <main className="lovableLogin" data-ui-source="lovable-admin-zip">
       <section className="loginHero">
         <div className="loginBrandMark">
           <Scissors size={28} />
@@ -81,8 +82,14 @@ export function AdminFrame({
   nav: readonly NavItem[];
   children: ReactNode;
 }) {
+  const [moreOpen, setMoreOpen] = useState(false);
+  const primaryTabs = ["agenda", "boekingen", "klanten", "webshop"];
+  const bottomTabs = nav.filter(([id]) => primaryTabs.includes(id));
+  const moreItems = nav.filter(([id]) => !primaryTabs.includes(id));
+  const moreActive = moreItems.some(([id]) => section === id);
+
   return (
-    <div className="lovableAdminShell">
+    <div className="lovableAdminShell" data-ui-source="lovable-admin-zip">
       <aside className="lovableSidebar">
         <div className="lovableBrand">
           <span>
@@ -109,20 +116,42 @@ export function AdminFrame({
           <div className="profileAvatar">RW</div>
           <div>
             <strong>RW CUTZZ</strong>
-            <small>Admin dashboard</small>
+            <small>owner@rwcutzz.nl</small>
           </div>
           <LogOut size={16} />
         </div>
       </aside>
       <main className="lovableMain">{children}</main>
       <nav className="lovableBottomNav">
-        {nav.slice(0, 4).map(([id, label, Icon]) => (
-          <a key={id} href={id === "agenda" ? "/admin" : `/admin/${id}`}>
+        {bottomTabs.map(([id, label, Icon]) => (
+          <a key={id} className={section === id ? "active" : ""} href={id === "agenda" ? "/admin" : `/admin/${id}`}>
             <Icon size={18} />
             <span>{label}</span>
           </a>
         ))}
+        <button className={moreActive ? "active" : ""} onClick={() => setMoreOpen(true)}>
+          <MoreHorizontal size={18} />
+          <span>Meer</span>
+        </button>
       </nav>
+      {moreOpen ? (
+        <div className="lovableMoreOverlay">
+          <div className="moreHeader">
+            <h2>Meer</h2>
+            <button onClick={() => setMoreOpen(false)} aria-label="Sluiten">
+              <X size={20} />
+            </button>
+          </div>
+          <div className="moreList">
+            {moreItems.map(([id, label, Icon]) => (
+              <a key={id} href={id === "agenda" ? "/admin" : `/admin/${id}`} className="moreItem">
+                <span><Icon size={20} /></span>
+                <strong>{label}</strong>
+              </a>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -140,6 +169,10 @@ export function PagePanel({
 }) {
   return (
     <section className="lovablePanel">
+      <div className="lovableMobileHeader">
+        <h1>{title}</h1>
+        {subtitle ? <p>{subtitle}</p> : null}
+      </div>
       <div className="lovablePanelHeader">
         <div>
           <p className="panelEyebrow">BarberFlow</p>
