@@ -1,12 +1,17 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createClient } from "@supabase/supabase-js";
-import { BarChart3, Bell, CalendarDays, Clock, LogIn, Menu, Scissors, Settings, ShoppingBag, Star, Users } from "lucide-react";
-import { AdminFrame, EmptyPanel, LovableLogin, MetricCard, PagePanel, StatusPill } from "./components/admin-ui/lovable-admin";
-import { AvatarInitials } from "./components/admin-ui/avatar-initials";
-import { FilterChips } from "./components/admin-ui/filter-chips";
-import { KPICard } from "./components/admin-ui/kpi-card";
-import { StatusBadge } from "./components/admin-ui/status-badge";
+import { BarChart3, CalendarDays, Clock, Inbox, LockKeyhole, Scissors, ShoppingBag, Star, Users } from "lucide-react";
+import { AppHeader } from "./components/app-header";
+import { AvatarInitials } from "./components/avatar-initials";
+import { BottomTabBar } from "./components/bottom-tab-bar";
+import { FilterChips } from "./components/filter-chips";
+import { FullSidebar, SideRail } from "./components/full-sidebar";
+import { KPICard } from "./components/kpi-card";
+import { PageHeader } from "./components/page-header";
+import { Button } from "./components/ui/button";
+import { Input } from "./components/ui/input";
+import { StatusBadge } from "./components/status-badge";
 import "./styles.css";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? "";
@@ -129,10 +134,10 @@ function AdminPage({ path }: { path: string }) {
     ["klanten", "Klanten", Users],
     ["diensten", "Diensten", Scissors],
     ["webshop", "Webshop", ShoppingBag],
-    ["aankondigingen", "Aankondigingen", Bell],
+    ["aankondigingen", "Aankondigingen", CalendarDays],
     ["reviews", "Reviews", Star],
     ["statistieken", "Statistieken", BarChart3],
-    ["beschikbaarheid", "Beschikbaarheid", Settings],
+    ["beschikbaarheid", "Beschikbaarheid", Clock],
   ] as const;
 
   return (
@@ -147,6 +152,81 @@ function AdminPage({ path }: { path: string }) {
         {section === "webshop" ? <AdminWebshop /> : null}
     </AdminFrame>
   );
+}
+
+function LovableLogin({
+  email,
+  sent,
+  denied,
+  checking,
+  onEmailChange,
+  onSubmit,
+}: {
+  email: string;
+  sent: boolean;
+  denied: boolean;
+  checking: boolean;
+  onEmailChange: (email: string) => void;
+  onSubmit: () => void;
+}) {
+  return (
+    <main className="min-h-screen bg-background text-foreground grid place-items-center p-4">
+      <section className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl">
+        <div className="h-12 w-12 rounded-xl bg-primary/15 text-primary grid place-items-center mb-4">
+          <LockKeyhole className="h-5 w-5" />
+        </div>
+        <h1 className="text-2xl font-black tracking-tight">BarberFlow Admin</h1>
+        <p className="text-sm text-muted-foreground mt-2">Log in met je beheerdersmail. Daarna controleren we je admin-rol.</p>
+        {denied ? <div className="notice dangerNotice">Geen toegang</div> : null}
+        {sent ? (
+          <div className="notice successNotice">Check je mail voor de magic link.</div>
+        ) : (
+          <div className="grid gap-3 mt-5">
+            <Input value={email} onChange={(event) => onEmailChange(event.target.value)} type="email" placeholder="owner@rwcutzz.nl" />
+            <Button disabled={!email || checking} onClick={onSubmit}>{checking ? "Controleren..." : "Magic link sturen"}</Button>
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}
+
+function AdminFrame({ children }: { section: string; nav: readonly any[]; children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen bg-background text-foreground flex">
+      <FullSidebar />
+      <SideRail />
+      <main className="flex-1 flex flex-col min-w-0 pb-20 md:pb-0">
+        <div className="flex-1 animate-page-in">{children}</div>
+      </main>
+      <BottomTabBar />
+    </div>
+  );
+}
+
+function PagePanel({ title, subtitle, actions, children }: { title: string; subtitle?: string; actions?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <>
+      <AppHeader title={title} large subtitle={subtitle} action={actions} />
+      <PageHeader title={title} description={subtitle} actions={actions} />
+      <div className="p-4 lg:p-8 space-y-4">{children}</div>
+    </>
+  );
+}
+
+function EmptyPanel({ children = "Geen gegevens gevonden." }: { children?: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-dashed border-border bg-card/50 p-10 flex flex-col items-center justify-center text-center gap-3">
+      <div className="h-12 w-12 rounded-full bg-muted grid place-items-center text-muted-foreground">
+        <Inbox className="h-5 w-5" />
+      </div>
+      <div className="text-sm font-semibold">{children}</div>
+    </div>
+  );
+}
+
+function StatusPill({ status }: { status: string }) {
+  return <StatusBadge status={status} />;
 }
 
 function AdminAgenda() {
