@@ -507,6 +507,31 @@ textarea,
   transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
+.lovableBookingRow {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.bookingCopy,
+.clientIdentity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bookingCopy {
+  display: grid;
+  gap: 2px;
+}
+
+.bookingCopy small {
+  color: var(--admin-muted, #667085);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .bookingBlock:hover,
 .tableRow:hover {
   border-color: rgba(37, 99, 235, 0.35);

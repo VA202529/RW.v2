@@ -1,29 +1,40 @@
-import { cn } from "@/lib/utils";
-import type { BookingStatus } from "@/lib/mock-data";
+import { cn } from "../../lib/utils";
 
-const bookingLabels: Record<BookingStatus, string> = {
+type AdminStatus =
+  | "confirmed"
+  | "pending"
+  | "pending_payment"
+  | "cancelled"
+  | "completed"
+  | "no_show"
+  | "paid"
+  | "ready_for_pickup"
+  | "picked_up"
+  | "superseded"
+  | string;
+
+const bookingLabels: Record<string, string> = {
   confirmed: "Bevestigd",
   pending: "In afwachting",
+  pending_payment: "In afwachting",
   cancelled: "Geannuleerd",
   completed: "Voltooid",
+  no_show: "No-show",
+  paid: "Betaald",
+  ready_for_pickup: "Klaar",
+  picked_up: "Opgehaald",
+  superseded: "Verlopen",
 };
 
-const bookingStyles: Record<BookingStatus, string> = {
-  confirmed: "bg-success/15 text-success border-success/30",
-  pending: "bg-warning/15 text-warning border-warning/30",
-  cancelled: "bg-destructive/15 text-destructive border-destructive/30",
-  completed: "bg-muted text-muted-foreground border-border",
-};
-
-export function StatusBadge({ status }: { status: BookingStatus }) {
+export function StatusBadge({ status }: { status: AdminStatus }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium",
-        bookingStyles[status],
+        "lovableStatus",
+        status,
       )}
     >
-      {bookingLabels[status]}
+      {bookingLabels[status] ?? status}
     </span>
   );
 }
