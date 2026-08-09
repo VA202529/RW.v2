@@ -877,6 +877,24 @@ textarea,
   border-radius: 18px;
 }
 
+.molliePaymentRow {
+  background: #141414 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+}
+
+.molliePaymentRow > span,
+.molliePaymentRow > small {
+  color: #ffffff !important;
+}
+
+.molliePaymentHeader {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
 .lovableBottomNav {
   display: none;
 }

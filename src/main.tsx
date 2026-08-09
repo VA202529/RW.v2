@@ -270,11 +270,14 @@ function ManualBooking({ services, onClose, onDone }: { services: Service[]; onC
 function AdminAvailability() {
   const [data, setData] = React.useState<{ rules: any[]; blocked_slots: any[]; day_overrides: any[] }>({ rules: [], blocked_slots: [], day_overrides: [] });
   const [rule, setRule] = React.useState({ id: "", weekday: 1, opens_at: "09:00", closes_at: "18:00", is_active: true, max_bookings_per_day: "" });
-  const [block, setBlock] = React.useState({ starts_at: "", ends_at: "", reason: "" });
+  const [block, setBlock] = React.useState({ date: isoDate(), start_time: "", end_time: "", note: "" });
   const [override, setOverride] = React.useState({ date: isoDate(), is_closed: false, opens_at: "", closes_at: "", max_bookings: "", note: "" });
   const [range, setRange] = React.useState({ date_from: isoDate(), date_to: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10) });
   const [conflicts, setConflicts] = React.useState<any[]>([]);
+  const [blockMessage, setBlockMessage] = React.useState("");
   const weekdays = ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"];
+  const blockCutoff = Date.now() + 30 * 24 * 60 * 60 * 1000;
+  const upcomingBlocks = data.blocked_slots.filter((item) => new Date(item.starts_at).getTime() <= blockCutoff);
   React.useEffect(() => { load(); }, []);
   async function load() {
     const { data } = await supabase.functions.invoke("admin-manage-availability", { body: { action: "list", payload: range } });
@@ -297,8 +300,28 @@ function AdminAvailability() {
     });
     load();
   }
-  async function addBlock() { const { data } = await supabase.functions.invoke("admin-manage-availability", { body: { action: "create_blocked_slot", payload: { starts_at: new Date(block.starts_at).toISOString(), ends_at: new Date(block.ends_at).toISOString(), reason: block.reason } } }); setConflicts(data?.conflicts ?? []); load(); }
-  async function deleteBlock(id: string) { await supabase.functions.invoke("admin-manage-availability", { body: { action: "delete_blocked_slot", payload: { id } } }); load(); }
+  async function addBlock() {
+    setBlockMessage("");
+    if (!block.date || !block.start_time || !block.end_time) {
+      setBlockMessage("Vul een datum, begintijd en eindtijd in.");
+      return;
+    }
+    const { data: result, error } = await supabase.functions.invoke("admin-manage-availability", {
+      body: { action: "add_block", ...block },
+    });
+    if (error || result?.status !== 201) {
+      setBlockMessage(result?.code === "INVALID_TIME_RANGE" ? "De eindtijd moet na de begintijd liggen." : "Blokkade opslaan is niet gelukt.");
+      return;
+    }
+    setConflicts(result.conflicts ?? []);
+    setBlock({ date: isoDate(), start_time: "", end_time: "", note: "" });
+    setBlockMessage("Tijdslot geblokkeerd.");
+    load();
+  }
+  async function deleteBlock(id: string) {
+    await supabase.functions.invoke("admin-manage-availability", { body: { action: "delete_block", id } });
+    load();
+  }
   async function saveOverride() {
     await supabase.functions.invoke("admin-manage-availability", {
       body: {
@@ -317,7 +340,7 @@ function AdminAvailability() {
     await supabase.functions.invoke("admin-manage-availability", { body: { action: "delete_override", date } });
     load();
   }
-  return <PagePanel title="Beschikbaarheid" subtitle="Beheer weekrooster, dag-overrides, maximale boekingen per dag en blokkades." actions={<button className="secondary" onClick={load}>Vernieuwen</button>}><h2>Weekrooster</h2><div className="actions"><select value={rule.weekday} onChange={e => setRule({ ...rule, weekday: Number(e.target.value) })}>{weekdays.map((d, i) => <option key={d} value={i}>{d}</option>)}</select><input type="time" value={rule.opens_at} onChange={e => setRule({ ...rule, opens_at: e.target.value })} /><input type="time" value={rule.closes_at} onChange={e => setRule({ ...rule, closes_at: e.target.value })} /><input type="number" min="0" placeholder="Max boekingen/dag" value={rule.max_bookings_per_day} onChange={e => setRule({ ...rule, max_bookings_per_day: e.target.value })} /><label><input type="checkbox" checked={rule.is_active} onChange={e => setRule({ ...rule, is_active: e.target.checked })} /> Actief</label><button className="primary" onClick={saveRule}>Regel opslaan</button></div><div className="table">{data.rules.map(r => <div className="tableRow lovableDataRow" key={r.id}><span>{weekdays[r.weekday] ?? `Dag ${r.weekday}`}</span><span>{r.opens_at} - {r.closes_at}</span><StatusPill status={r.is_active ? "confirmed" : "cancelled"} /><span>Max: {r.max_bookings_per_day ?? "geen limiet"}</span><input type="number" min="0" placeholder="Nieuw max" onBlur={e => setMaxBookings(r.weekday, e.target.value)} /><button className="secondary" onClick={() => setRule({ id: r.id, weekday: r.weekday, opens_at: r.opens_at?.slice(0, 5), closes_at: r.closes_at?.slice(0, 5), is_active: r.is_active, max_bookings_per_day: r.max_bookings_per_day ?? "" })}>Bewerk</button></div>)}</div><h2>Dag-overrides</h2><div className="actions"><input type="date" value={range.date_from} onChange={e => setRange({ ...range, date_from: e.target.value })} /><input type="date" value={range.date_to} onChange={e => setRange({ ...range, date_to: e.target.value })} /><button className="secondary" onClick={load}>Periode laden</button></div><div className="formGrid"><input type="date" value={override.date} onChange={e => setOverride({ ...override, date: e.target.value })} /><input type="time" value={override.opens_at} disabled={override.is_closed} onChange={e => setOverride({ ...override, opens_at: e.target.value })} /><input type="time" value={override.closes_at} disabled={override.is_closed} onChange={e => setOverride({ ...override, closes_at: e.target.value })} /><input type="number" min="0" placeholder="Max boekingen" value={override.max_bookings} onChange={e => setOverride({ ...override, max_bookings: e.target.value })} /><input placeholder="Notitie" value={override.note} onChange={e => setOverride({ ...override, note: e.target.value })} /><label><input type="checkbox" checked={override.is_closed} onChange={e => setOverride({ ...override, is_closed: e.target.checked })} /> Gesloten</label></div><button className="primary" onClick={saveOverride}>Override opslaan</button><div className="table">{data.day_overrides.length === 0 ? <EmptyPanel>Geen dag-overrides in deze periode.</EmptyPanel> : data.day_overrides.map(o => <div className="tableRow lovableDataRow" key={o.id}><span>{o.override_date}</span><span>{o.is_closed ? "Gesloten" : `${o.opens_at ?? "-"} - ${o.closes_at ?? "-"}`}</span><span>Max: {o.max_bookings ?? "geen limiet"}</span><span>{o.note ?? ""}</span><button className="danger" onClick={() => deleteOverride(o.override_date)}>Verwijder</button></div>)}</div><h2>Blokkades</h2><div className="formGrid"><input type="datetime-local" onChange={(e) => setBlock({ ...block, starts_at: e.target.value })} /><input type="datetime-local" onChange={(e) => setBlock({ ...block, ends_at: e.target.value })} /><input placeholder="Reden" onChange={(e) => setBlock({ ...block, reason: e.target.value })} /></div><button className="primary" onClick={addBlock}>Blokkade toevoegen</button>{conflicts.length > 0 && <div className="notice">Conflicten gevonden: {conflicts.map(c => c.customer_name).join(", ")}. Los deze op via boekingsdetails.</div>}<div className="table">{data.blocked_slots.length === 0 ? <EmptyPanel>Geen aankomende blokkades.</EmptyPanel> : data.blocked_slots.map(b => <div className="tableRow lovableDataRow" key={b.id}><span>{formatLocal(b.starts_at)}</span><span>{formatLocal(b.ends_at)}</span><span>{b.reason}</span><button className="danger" onClick={() => deleteBlock(b.id)}>Verwijder</button></div>)}</div></PagePanel>;
+  return <PagePanel title="Beschikbaarheid" subtitle="Beheer weekrooster, dag-overrides, maximale boekingen per dag en blokkades." actions={<button className="secondary" onClick={load}>Vernieuwen</button>}><h2>Weekrooster</h2><div className="actions"><select value={rule.weekday} onChange={e => setRule({ ...rule, weekday: Number(e.target.value) })}>{weekdays.map((d, i) => <option key={d} value={i}>{d}</option>)}</select><input type="time" value={rule.opens_at} onChange={e => setRule({ ...rule, opens_at: e.target.value })} /><input type="time" value={rule.closes_at} onChange={e => setRule({ ...rule, closes_at: e.target.value })} /><input type="number" min="0" placeholder="Max boekingen/dag" value={rule.max_bookings_per_day} onChange={e => setRule({ ...rule, max_bookings_per_day: e.target.value })} /><label><input type="checkbox" checked={rule.is_active} onChange={e => setRule({ ...rule, is_active: e.target.checked })} /> Actief</label><button className="primary" onClick={saveRule}>Regel opslaan</button></div><div className="table">{data.rules.map(r => <div className="tableRow lovableDataRow" key={r.id}><span>{weekdays[r.weekday] ?? `Dag ${r.weekday}`}</span><span>{r.opens_at} - {r.closes_at}</span><StatusPill status={r.is_active ? "confirmed" : "cancelled"} /><span>Max: {r.max_bookings_per_day ?? "geen limiet"}</span><input type="number" min="0" placeholder="Nieuw max" onBlur={e => setMaxBookings(r.weekday, e.target.value)} /><button className="secondary" onClick={() => setRule({ id: r.id, weekday: r.weekday, opens_at: r.opens_at?.slice(0, 5), closes_at: r.closes_at?.slice(0, 5), is_active: r.is_active, max_bookings_per_day: r.max_bookings_per_day ?? "" })}>Bewerk</button></div>)}</div><h2>Dag-overrides</h2><div className="actions"><input type="date" value={range.date_from} onChange={e => setRange({ ...range, date_from: e.target.value })} /><input type="date" value={range.date_to} onChange={e => setRange({ ...range, date_to: e.target.value })} /><button className="secondary" onClick={load}>Periode laden</button></div><div className="formGrid"><input type="date" value={override.date} onChange={e => setOverride({ ...override, date: e.target.value })} /><input type="time" value={override.opens_at} disabled={override.is_closed} onChange={e => setOverride({ ...override, opens_at: e.target.value })} /><input type="time" value={override.closes_at} disabled={override.is_closed} onChange={e => setOverride({ ...override, closes_at: e.target.value })} /><input type="number" min="0" placeholder="Max boekingen" value={override.max_bookings} onChange={e => setOverride({ ...override, max_bookings: e.target.value })} /><input placeholder="Notitie" value={override.note} onChange={e => setOverride({ ...override, note: e.target.value })} /><label><input type="checkbox" checked={override.is_closed} onChange={e => setOverride({ ...override, is_closed: e.target.checked })} /> Gesloten</label></div><button className="primary" onClick={saveOverride}>Override opslaan</button><div className="table">{data.day_overrides.length === 0 ? <EmptyPanel>Geen dag-overrides in deze periode.</EmptyPanel> : data.day_overrides.map(o => <div className="tableRow lovableDataRow" key={o.id}><span>{o.override_date}</span><span>{o.is_closed ? "Gesloten" : `${o.opens_at ?? "-"} - ${o.closes_at ?? "-"}`}</span><span>Max: {o.max_bookings ?? "geen limiet"}</span><span>{o.note ?? ""}</span><button className="danger" onClick={() => deleteOverride(o.override_date)}>Verwijder</button></div>)}</div><h2>Tijdslot blokkeren</h2><div className="formGrid"><input aria-label="Datum" type="date" value={block.date} onChange={e => setBlock({ ...block, date: e.target.value })} /><input aria-label="Begintijd" type="time" value={block.start_time} onChange={e => setBlock({ ...block, start_time: e.target.value })} /><input aria-label="Eindtijd" type="time" value={block.end_time} onChange={e => setBlock({ ...block, end_time: e.target.value })} /><input aria-label="Notitie" placeholder="Notitie, bijvoorbeeld Pauze" value={block.note} onChange={e => setBlock({ ...block, note: e.target.value })} /></div><button className="primary" onClick={addBlock}>Tijdslot opslaan</button>{blockMessage && <div className="notice">{blockMessage}</div>}{conflicts.length > 0 && <div className="notice">Conflicten gevonden: {conflicts.map(c => c.customer_name).join(", ")}. Los deze op via boekingsdetails.</div>}<h3>Blokkades komende 30 dagen</h3><div className="table">{upcomingBlocks.length === 0 ? <EmptyPanel>Geen blokkades in de komende 30 dagen.</EmptyPanel> : upcomingBlocks.map(b => <div className="tableRow lovableDataRow" key={b.id}><span>{formatLocal(b.starts_at)}</span><span>{formatLocal(b.ends_at)}</span><span>{b.reason || "Geen notitie"}</span><button className="danger" onClick={() => deleteBlock(b.id)}>Verwijder</button></div>)}</div></PagePanel>;
 }
 
 function AdminServices() {
@@ -379,7 +402,43 @@ function AdminStats() {
     if (statsData?.status === 200) setStats(statsData);
     if (mollieData?.status === 200) setMollie(mollieData);
   }
-  return <PagePanel title="Statistieken" subtitle="Live omzet, boekingen en klanttrends." actions={<><input type="date" value={from} onChange={e => setFrom(e.target.value)} /><input type="date" value={to} onChange={e => setTo(e.target.value)} /><button className="primary" onClick={load}>Vernieuwen</button></>}>{stats ? <div className="metrics adminMetrics lovableMetrics"><KPICard label="Boekingen" value={String(stats.bookings.total)} icon={CalendarDays} /><KPICard label="No-show" value={`${stats.no_show_pct}%`} icon={Clock} positive={false} /><KPICard label="Aanbetalingen" value={cents(stats.deposit_revenue_cents)} icon={ShoppingBag} /><KPICard label="Platform fee" value={cents(stats.platform_fee_cents)} icon={BarChart3} /><KPICard label="Terugkeer" value={`${stats.return_rate_pct}%`} icon={Users} /><KPICard label="Nieuwe klanten" value={String(stats.new_customers)} icon={Users} /></div> : <EmptyPanel>Statistieken laden...</EmptyPanel>}{mollie ? <><h2 className="sectionTitle">Mollie betalingen</h2><div className="metrics adminMetrics lovableMetrics"><KPICard label="Test betaald" value={cents(mollie.summary.test.paid_cents)} icon={ShoppingBag} /><KPICard label="Test platform fee" value={cents(mollie.summary.test.platform_fee_cents)} icon={BarChart3} /><KPICard label="Live betaald" value={cents(mollie.summary.live.paid_cents)} icon={ShoppingBag} /><KPICard label="Live platform fee" value={cents(mollie.summary.live.platform_fee_cents)} icon={BarChart3} /></div><div className="table">{mollie.payments.length === 0 ? <EmptyPanel>Geen Mollie-betalingen in deze periode.</EmptyPanel> : mollie.payments.map((payment: any) => <div className="tableRow lovableDataRow" key={payment.id}><span>{payment.customer_name || payment.customer_email}</span><span>{payment.service_name}</span><span>{cents(payment.amount_cents)}</span><span>{payment.payment_mode === "live" ? "Live" : "Test"}</span><StatusPill status={payment.status} /></div>)}</div></> : null}</PagePanel>;
+  const paidPayments = (mollie?.payments ?? []).filter((payment: any) => payment.status === "paid");
+  const totals = paidPayments.reduce((result: { collected: number; mollieFees: number; platformFees: number }, payment: any) => {
+    result.collected += payment.amount_cents ?? 0;
+    result.mollieFees += Math.round(29 + (payment.amount_cents ?? 0) * 0.012);
+    result.platformFees += payment.platform_fee_cents ?? 0;
+    return result;
+  }, { collected: 0, mollieFees: 0, platformFees: 0 });
+  const netToBarber = Math.max(totals.collected - totals.mollieFees - totals.platformFees, 0);
+
+  return (
+    <PagePanel title="Statistieken" subtitle="Live omzet, boekingen en klanttrends." actions={<><input type="date" value={from} onChange={e => setFrom(e.target.value)} /><input type="date" value={to} onChange={e => setTo(e.target.value)} /><button className="primary" onClick={load}>Vernieuwen</button></>}>
+      {stats ? <div className="metrics adminMetrics lovableMetrics"><KPICard label="Boekingen" value={String(stats.bookings.total)} icon={CalendarDays} /><KPICard label="No-show" value={`${stats.no_show_pct}%`} icon={Clock} positive={false} /><KPICard label="Aanbetalingen" value={cents(stats.deposit_revenue_cents)} icon={ShoppingBag} /><KPICard label="Platform fee" value={cents(stats.platform_fee_cents)} icon={BarChart3} /><KPICard label="Terugkeer" value={`${stats.return_rate_pct}%`} icon={Users} /><KPICard label="Nieuwe klanten" value={String(stats.new_customers)} icon={Users} /></div> : <EmptyPanel>Statistieken laden...</EmptyPanel>}
+      {mollie ? <>
+        <h2 className="sectionTitle">Maandoverzicht Mollie</h2>
+        <div className="metrics adminMetrics lovableMetrics">
+          <KPICard label="Totaal ontvangen deze maand" value={cents(totals.collected)} icon={ShoppingBag} />
+          <KPICard label="Mollie-kosten deze maand" value={cents(totals.mollieFees)} icon={BarChart3} />
+          <KPICard label="Van Appiah-fee deze maand" value={cents(totals.platformFees)} icon={BarChart3} />
+          <KPICard label="Netto naar kapper deze maand" value={cents(netToBarber)} icon={Users} />
+        </div>
+        <h2 className="sectionTitle">Mollie-betalingen</h2>
+        <div className="table molliePaymentsTable">
+          {mollie.payments.length === 0 ? <EmptyPanel>Geen Mollie-betalingen in deze periode.</EmptyPanel> : <>
+            <div className="tableRow lovableDataRow molliePaymentRow molliePaymentHeader text-white">
+              <span>Klant</span><span>Dienst</span><span>Aanbetaling</span><span>Mollie-kosten</span><span>Van Appiah-fee</span><span>Netto kapper</span><span>Modus</span><span>Status</span>
+            </div>
+            {mollie.payments.map((payment: any) => {
+              const mollieFee = payment.status === "paid" ? Math.round(29 + (payment.amount_cents ?? 0) * 0.012) : 0;
+              const platformFee = payment.status === "paid" ? payment.platform_fee_cents ?? 0 : 0;
+              const net = Math.max((payment.amount_cents ?? 0) - mollieFee - platformFee, 0);
+              return <div className="tableRow lovableDataRow molliePaymentRow text-white" key={payment.id}><span>{payment.customer_name || payment.customer_email}</span><span>{payment.service_name}</span><span>{cents(payment.amount_cents)}</span><span>{cents(mollieFee)} <small>(schatting)</small></span><span>{cents(platformFee)}</span><span>{cents(net)}</span><span>{payment.payment_mode === "live" ? "Live" : "Test"}</span><StatusPill status={payment.status} /></div>;
+            })}
+          </>}
+        </div>
+      </> : null}
+    </PagePanel>
+  );
 }
 
 function AdminWebshop() {
