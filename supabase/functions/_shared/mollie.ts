@@ -14,11 +14,13 @@ export type MolliePayment = {
 };
 
 export function mollieConfig() {
-  const mode = Deno.env.get("MOLLIE_MODE")?.trim() || "test";
+  const mode = Deno.env.get("MOLLIE_MODE") ?? "test";
   if (mode !== "test" && mode !== "live") throw new Error("MOLLIE_MODE must be test or live");
-  const apiKeyName = mode === "test" ? "MOLLIE_TEST_API_KEY" : "MOLLIE_LIVE_API_KEY";
-  const apiKey = Deno.env.get(apiKeyName)?.trim();
-  if (!apiKey) throw new Error(`Missing ${apiKeyName}`);
+  const apiKey = mode === "live"
+    ? Deno.env.get("MOLLIE_LIVE_API_KEY")
+    : Deno.env.get("MOLLIE_TEST_API_KEY");
+  if (!apiKey) throw new Error(`Missing MOLLIE_${mode.toUpperCase()}_API_KEY`);
+  const apiKeyName = `MOLLIE_${mode.toUpperCase()}_API_KEY`;
   if (apiKey === "test_PLACEHOLDER" || apiKey === "live_PLACEHOLDER") {
     throw new Error(`${apiKeyName} is still a placeholder`);
   }
