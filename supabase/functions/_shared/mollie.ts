@@ -14,12 +14,16 @@ export type MolliePayment = {
 };
 
 export function mollieConfig() {
-  const apiKey = Deno.env.get("MOLLIE_API_KEY")?.trim();
-  const mode = Deno.env.get("MOLLIE_MODE")?.trim();
-  if (!apiKey) throw new Error("Missing MOLLIE_API_KEY");
+  const mode = Deno.env.get("MOLLIE_MODE")?.trim() || "test";
   if (mode !== "test" && mode !== "live") throw new Error("MOLLIE_MODE must be test or live");
+  const apiKeyName = mode === "test" ? "MOLLIE_TEST_API_KEY" : "MOLLIE_LIVE_API_KEY";
+  const apiKey = Deno.env.get(apiKeyName)?.trim();
+  if (!apiKey) throw new Error(`Missing ${apiKeyName}`);
+  if (apiKey === "test_PLACEHOLDER" || apiKey === "live_PLACEHOLDER") {
+    throw new Error(`${apiKeyName} is still a placeholder`);
+  }
   const expectedPrefix = mode === "test" ? "test_" : "live_";
-  if (!apiKey.startsWith(expectedPrefix)) throw new Error(`MOLLIE_API_KEY must start with ${expectedPrefix}`);
+  if (!apiKey.startsWith(expectedPrefix)) throw new Error(`${apiKeyName} must start with ${expectedPrefix}`);
   return { apiKey, mode } as { apiKey: string; mode: MollieMode };
 }
 
@@ -36,12 +40,13 @@ export async function mollieRequest<T>(
   if (idempotencyKey) headers.set("Idempotency-Key", idempotencyKey);
 
   const response = await fetch(`${MOLLIE_API_URL}${path}`, { ...init, headers });
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error("Mollie error response:", errorBody);
+    throw new Error(`Mollie API returned ${response.status}: ${errorBody}`);
+  }
   const text = await response.text();
   const payload = text ? JSON.parse(text) : null;
-  if (!response.ok) {
-    console.error("Mollie API error", response.status, payload?.status, payload?.title);
-    throw new Error(`Mollie API returned ${response.status}`);
-  }
   return payload as T;
 }
 

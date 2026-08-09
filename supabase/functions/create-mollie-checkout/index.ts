@@ -13,18 +13,22 @@ import { bodyComponent, cents, dateParts, firstName, sendWhatsAppTemplate } from
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 Deno.serve(async (req) => {
-  const options = handleOptions(req);
-  if (options) return options;
-
   try {
+    const { mode } = mollieConfig();
+    console.log("MOLLIE_MODE:", mode);
+    console.log("Selected Mollie API key set: true");
+
+    const options = handleOptions(req);
+    if (options) return options;
+
     const body = await req.json();
+    console.log("REQUEST BODY:", JSON.stringify(body));
     const bookingId = typeof body?.booking_id === "string" ? body.booking_id : "";
     const serviceId = typeof body?.service_id === "string" ? body.service_id : "";
     if (!UUID_PATTERN.test(bookingId) || !UUID_PATTERN.test(serviceId)) {
       return noStoreJson({ code: "INVALID_BODY" }, 400);
     }
 
-    const { mode } = mollieConfig();
     const supabase = serviceClient();
     const { data, error } = await supabase.rpc("wp_mollie_prepare_booking_checkout", {
       p_booking_id: bookingId,
@@ -83,8 +87,8 @@ Deno.serve(async (req) => {
 
     return noStoreJson({ checkout_url: checkoutUrl, payment_id: payment.id, booking_id: bookingId }, 201);
   } catch (error) {
-    console.error("create-mollie-checkout failed", error);
-    return noStoreJson({ code: "SERVER_ERROR" }, 500);
+    console.error("CRASH:", String(error), error instanceof Error ? error.stack : undefined);
+    return noStoreJson({ code: "SERVER_ERROR", detail: String(error) }, 500);
   }
 });
 
