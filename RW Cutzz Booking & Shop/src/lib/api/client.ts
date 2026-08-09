@@ -110,13 +110,14 @@ export async function createBookingHold(args: {
 
 export async function createCheckout(args: {
   booking_id: string;
+  service_id: string;
 }): Promise<{ checkout_url?: string; status?: string }> {
   if (!HAS_BACKEND) {
     await sleep(400);
     return { status: "confirmed" };
   }
-  const data = await edgeFunction<{ checkout_url?: string; url?: string; status?: string; confirmed?: boolean }>("create-checkout", args);
-  return { checkout_url: data.checkout_url ?? data.url, status: data.status ?? (data.confirmed ? "confirmed" : undefined) };
+  const data = await edgeFunction<{ checkout_url?: string; status?: string; confirmed?: boolean }>("create-mollie-checkout", args);
+  return { checkout_url: data.checkout_url, status: data.status ?? (data.confirmed ? "confirmed" : undefined) };
 }
 
 export async function getProducts(): Promise<Product[]> {

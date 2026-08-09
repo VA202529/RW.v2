@@ -190,7 +190,10 @@ function Boeken() {
               onExpire={() => nav({ to: "/boeken/verlopen" })}
               onConfirm={async () => {
                 try {
-                  const res = await createCheckout({ booking_id: state.booking_id! });
+                  const res = await createCheckout({
+                    booking_id: state.booking_id!,
+                    service_id: selectedService.id,
+                  });
                   if (res.checkout_url) {
                     window.location.href = res.checkout_url;
                   } else {

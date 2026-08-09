@@ -368,9 +368,18 @@ function AdminStats() {
   const [from, setFrom] = React.useState(new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10));
   const [to, setTo] = React.useState(new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString().slice(0, 10));
   const [stats, setStats] = React.useState<any>(null);
+  const [mollie, setMollie] = React.useState<any>(null);
   React.useEffect(() => { load(); }, []);
-  async function load() { const { data } = await supabase.functions.invoke("admin-stats", { body: { date_from: new Date(from).toISOString(), date_to: new Date(to).toISOString() } }); if (data?.status === 200) setStats(data); }
-  return <PagePanel title="Statistieken" subtitle="Live omzet, boekingen en klanttrends." actions={<><input type="date" value={from} onChange={e => setFrom(e.target.value)} /><input type="date" value={to} onChange={e => setTo(e.target.value)} /><button className="primary" onClick={load}>Vernieuwen</button></>}>{stats ? <div className="metrics adminMetrics lovableMetrics"><KPICard label="Boekingen" value={String(stats.bookings.total)} icon={CalendarDays} /><KPICard label="No-show" value={`${stats.no_show_pct}%`} icon={Clock} positive={false} /><KPICard label="Aanbetalingen" value={cents(stats.deposit_revenue_cents)} icon={ShoppingBag} /><KPICard label="Platform fee" value={cents(stats.platform_fee_cents)} icon={BarChart3} /><KPICard label="Terugkeer" value={`${stats.return_rate_pct}%`} icon={Users} /><KPICard label="Nieuwe klanten" value={String(stats.new_customers)} icon={Users} /></div> : <EmptyPanel>Statistieken laden...</EmptyPanel>}</PagePanel>;
+  async function load() {
+    const body = { date_from: new Date(from).toISOString(), date_to: new Date(to).toISOString() };
+    const [{ data: statsData }, { data: mollieData }] = await Promise.all([
+      supabase.functions.invoke("admin-stats", { body }),
+      supabase.functions.invoke("admin-mollie-payments", { body }),
+    ]);
+    if (statsData?.status === 200) setStats(statsData);
+    if (mollieData?.status === 200) setMollie(mollieData);
+  }
+  return <PagePanel title="Statistieken" subtitle="Live omzet, boekingen en klanttrends." actions={<><input type="date" value={from} onChange={e => setFrom(e.target.value)} /><input type="date" value={to} onChange={e => setTo(e.target.value)} /><button className="primary" onClick={load}>Vernieuwen</button></>}>{stats ? <div className="metrics adminMetrics lovableMetrics"><KPICard label="Boekingen" value={String(stats.bookings.total)} icon={CalendarDays} /><KPICard label="No-show" value={`${stats.no_show_pct}%`} icon={Clock} positive={false} /><KPICard label="Aanbetalingen" value={cents(stats.deposit_revenue_cents)} icon={ShoppingBag} /><KPICard label="Platform fee" value={cents(stats.platform_fee_cents)} icon={BarChart3} /><KPICard label="Terugkeer" value={`${stats.return_rate_pct}%`} icon={Users} /><KPICard label="Nieuwe klanten" value={String(stats.new_customers)} icon={Users} /></div> : <EmptyPanel>Statistieken laden...</EmptyPanel>}{mollie ? <><h2 className="sectionTitle">Mollie betalingen</h2><div className="metrics adminMetrics lovableMetrics"><KPICard label="Test betaald" value={cents(mollie.summary.test.paid_cents)} icon={ShoppingBag} /><KPICard label="Test platform fee" value={cents(mollie.summary.test.platform_fee_cents)} icon={BarChart3} /><KPICard label="Live betaald" value={cents(mollie.summary.live.paid_cents)} icon={ShoppingBag} /><KPICard label="Live platform fee" value={cents(mollie.summary.live.platform_fee_cents)} icon={BarChart3} /></div><div className="table">{mollie.payments.length === 0 ? <EmptyPanel>Geen Mollie-betalingen in deze periode.</EmptyPanel> : mollie.payments.map((payment: any) => <div className="tableRow lovableDataRow" key={payment.id}><span>{payment.customer_name || payment.customer_email}</span><span>{payment.service_name}</span><span>{cents(payment.amount_cents)}</span><span>{payment.payment_mode === "live" ? "Live" : "Test"}</span><StatusPill status={payment.status} /></div>)}</div></> : null}</PagePanel>;
 }
 
 function AdminWebshop() {
