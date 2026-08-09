@@ -129,8 +129,10 @@ function Boeken() {
             <Step1
               services={services}
               value={state.service_id}
-              onSelect={(id) => dispatch({ type: "set_service", id })}
-              onNext={() => dispatch({ type: "next" })}
+              onSelect={(id) => {
+                dispatch({ type: "set_service", id });
+                dispatch({ type: "next" });
+              }}
             />
           )}
           {state.step === 2 && selectedService && (
@@ -216,12 +218,10 @@ function Step1({
   services,
   value,
   onSelect,
-  onNext,
 }: {
   services: Awaited<ReturnType<typeof getServices>>;
   value?: string;
   onSelect: (id: string) => void;
-  onNext: () => void;
 }) {
   return (
     <div className="grid gap-4">
@@ -259,15 +259,6 @@ function Step1({
           </button>
         );
       })}
-      <div className="flex justify-end pt-4">
-        <button
-          onClick={onNext}
-          disabled={!value}
-          className="bg-brand-accent text-white px-6 py-3 text-xs font-bold uppercase tracking-widest disabled:opacity-40 hover:glow-accent transition"
-        >
-          Volgende →
-        </button>
-      </div>
     </div>
   );
 }
