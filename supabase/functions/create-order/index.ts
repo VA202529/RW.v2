@@ -3,7 +3,10 @@ import { serviceClient } from "../_shared/supabase.ts";
 
 async function verifyTurnstile(token: string | undefined, ip: string | null) {
   const secret = Deno.env.get("TURNSTILE_SECRET_KEY");
-  const skipValidation = !secret || secret.startsWith("1x0000") || token === "BYPASS" || token === "XXXX.DUMMY.TOKEN.XXXX";
+  const isProduction = Deno.env.get("ENVIRONMENT") === "production";
+  const skipValidation = !isProduction && (
+    !secret || secret.startsWith("1x0000") || token === "BYPASS" || token === "XXXX.DUMMY.TOKEN.XXXX"
+  );
   if (skipValidation) return true;
   if (!secret || !token) return false;
   const body = new URLSearchParams({ secret, response: token });
@@ -18,9 +21,9 @@ Deno.serve(async (req) => {
   if (options) return options;
   try {
     const body = await req.json();
-    console.log("REQUEST BODY:", JSON.stringify(body));
+    console.log("[create-order] received request");
     const ip = req.headers.get("cf-connecting-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
-    if (!(await verifyTurnstile(body.turnstile_token, ip))) return json({ code: "INVALID_TURNSTILE" }, 403);
+    if (!(await verifyTurnstile(body.turnstile_token, ip))) return json({ code: "INVALID_TURNSTILE" }, 403, {}, req);
     const { data, error } = await serviceClient().rpc("wp4_create_order", {
       p_items: body.items ?? [],
       p_full_name: body.guest?.full_name,
@@ -32,9 +35,9 @@ Deno.serve(async (req) => {
       p_ip: ip,
     });
     if (error) throw error;
-    return json(data, data.status ?? 200);
+    return json(data, data.status ?? 200, {}, req);
   } catch (error) {
     console.error(error);
-    return json({ code: "SERVER_ERROR" }, 500);
+    return json({ code: "SERVER_ERROR" }, 500, {}, req);
   }
 });

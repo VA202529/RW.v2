@@ -1,4 +1,5 @@
 import { noStoreJson } from "../_shared/http.ts";
+import { decryptToken, encryptToken } from "../_shared/crypto.ts";
 import { serviceClient } from "../_shared/supabase.ts";
 
 const TOKEN_ID = "barberflow-rwcutzz";
@@ -14,12 +15,13 @@ Deno.serve(async () => {
       .single();
     if (error || !data?.refresh_token) throw error ?? new Error("Missing Mollie refresh token");
 
-    const tokenResponse = await refreshToken(data.refresh_token);
+    const refreshTokenValue = await decryptToken(data.refresh_token);
+    const tokenResponse = await refreshToken(refreshTokenValue);
     const { error: updateError } = await supabase
       .from("mollie_tokens")
       .update({
-        access_token: tokenResponse.access_token,
-        refresh_token: tokenResponse.refresh_token ?? data.refresh_token,
+        access_token: await encryptToken(tokenResponse.access_token),
+        refresh_token: await encryptToken(tokenResponse.refresh_token ?? refreshTokenValue),
         expires_at: new Date(Date.now() + tokenResponse.expires_in * 1000).toISOString(),
       })
       .eq("id", TOKEN_ID);
@@ -28,7 +30,7 @@ Deno.serve(async () => {
     return noStoreJson({ success: true });
   } catch (error) {
     console.error("Mollie token refresh failed:", String(error));
-    return noStoreJson({ success: false, code: "MOLLIE_TOKEN_REFRESH_FAILED", detail: String(error) }, 500);
+    return noStoreJson({ success: false, code: "MOLLIE_TOKEN_REFRESH_FAILED" }, 500);
   }
 });
 

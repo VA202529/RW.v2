@@ -1,6 +1,10 @@
 ﻿.env
 .env.*
 !.env.example
+*.env.legacy-backup
+*.env.vercel.*
+*.env.backup
+*.env.old
 node_modules/
 dist/
 *.log

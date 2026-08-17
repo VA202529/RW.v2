@@ -1,4 +1,5 @@
 import { handleOptions, noStoreJson } from "../_shared/http.ts";
+import { decryptToken, encryptToken } from "../_shared/crypto.ts";
 import {
   centsToMollieValue,
   mollieCheckoutUrl,
@@ -16,18 +17,16 @@ const MOLLIE_TOKEN_ID = "barberflow-rwcutzz";
 Deno.serve(async (req) => {
   try {
     const mode = mollieMode();
-    console.log("MOLLIE_MODE:", mode);
-    console.log("Selected Mollie OAuth token id:", MOLLIE_TOKEN_ID);
 
     const options = handleOptions(req);
     if (options) return options;
 
     const body = await req.json();
-    console.log("REQUEST BODY:", JSON.stringify(body));
     const bookingId = typeof body?.booking_id === "string" ? body.booking_id : "";
     const serviceId = typeof body?.service_id === "string" ? body.service_id : "";
+    console.log("[mollie-checkout] creating payment for booking:", bookingId);
     if (!UUID_PATTERN.test(bookingId) || !UUID_PATTERN.test(serviceId)) {
-      return noStoreJson({ code: "INVALID_BODY" }, 400);
+      return noStoreJson({ code: "INVALID_BODY" }, 400, req);
     }
 
     const supabase = serviceClient();
@@ -38,11 +37,11 @@ Deno.serve(async (req) => {
       p_payment_mode: mode,
     });
     if (error) throw error;
-    if (!data || data.status !== 200) return noStoreJson(data ?? { code: "CHECKOUT_PREPARE_FAILED" }, data?.status ?? 500);
+    if (!data || data.status !== 200) return noStoreJson(data ?? { code: "CHECKOUT_PREPARE_FAILED" }, data?.status ?? 500, req);
 
     if (!data.requires_mollie) {
       await sendBookingConfirmation(supabase, bookingId);
-      return noStoreJson({ confirmed: true, booking_id: bookingId, status: "confirmed" });
+      return noStoreJson({ confirmed: true, booking_id: bookingId, status: "confirmed" }, 200, req);
     }
 
     if (data.mollie_payment_id) {
@@ -56,7 +55,7 @@ Deno.serve(async (req) => {
           checkout_url: mollieCheckoutUrl(existing),
           payment_id: existing.id,
           booking_id: bookingId,
-        });
+        }, 200, req);
       }
     }
 
@@ -96,10 +95,10 @@ Deno.serve(async (req) => {
     });
     if (attachError || attached !== true) throw attachError ?? new Error("Could not attach Mollie payment");
 
-    return noStoreJson({ checkout_url: checkoutUrl, payment_id: payment.id, booking_id: bookingId }, 201);
+    return noStoreJson({ checkout_url: checkoutUrl, payment_id: payment.id, booking_id: bookingId }, 201, req);
   } catch (error) {
     console.error("CRASH:", String(error), error instanceof Error ? error.stack : undefined);
-    return noStoreJson({ code: "SERVER_ERROR", detail: String(error) }, 500);
+    return noStoreJson({ code: "SERVER_ERROR" }, 500, req);
   }
 });
 
@@ -113,22 +112,24 @@ async function getMollieToken(supabase: ReturnType<typeof serviceClient>) {
     throw error ?? new Error("Mollie OAuth token is not connected");
   }
 
+  const accessToken = await decryptToken(data.access_token);
+  const refreshToken = data.refresh_token ? await decryptToken(data.refresh_token) : null;
   if (new Date(data.expires_at).getTime() > Date.now() + 60_000) {
-    return data as { access_token: string; refresh_token: string | null; expires_at: string; profile_id: string };
+    return { access_token: accessToken, refresh_token: refreshToken, expires_at: data.expires_at, profile_id: data.profile_id };
   }
 
-  const refreshed = await refreshMollieToken(data.refresh_token);
+  const refreshed = await refreshMollieToken(refreshToken);
   const nextToken = {
     access_token: refreshed.access_token,
-    refresh_token: refreshed.refresh_token ?? data.refresh_token,
+    refresh_token: refreshed.refresh_token ?? refreshToken,
     expires_at: new Date(Date.now() + refreshed.expires_in * 1000).toISOString(),
     profile_id: data.profile_id,
   };
   const { error: updateError } = await supabase
     .from("mollie_tokens")
     .update({
-      access_token: nextToken.access_token,
-      refresh_token: nextToken.refresh_token,
+      access_token: await encryptToken(nextToken.access_token),
+      refresh_token: nextToken.refresh_token ? await encryptToken(nextToken.refresh_token) : null,
       expires_at: nextToken.expires_at,
     })
     .eq("id", MOLLIE_TOKEN_ID);

@@ -4,7 +4,10 @@ import { connectedAccount, stripeClient } from "../_shared/stripe.ts";
 
 async function verifyTurnstile(token: string | undefined, ip: string | null) {
   const secret = Deno.env.get("TURNSTILE_SECRET_KEY");
-  const skipValidation = !secret || secret.startsWith("1x0000") || token === "BYPASS" || token === "XXXX.DUMMY.TOKEN.XXXX";
+  const isProduction = Deno.env.get("ENVIRONMENT") === "production";
+  const skipValidation = !isProduction && (
+    !secret || secret.startsWith("1x0000") || token === "BYPASS" || token === "XXXX.DUMMY.TOKEN.XXXX"
+  );
   if (skipValidation) return true;
   if (!secret || !token) return false;
 
@@ -25,15 +28,12 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    console.log("REQUEST BODY:", JSON.stringify(body));
-    console.log("FULL BODY:", JSON.stringify(body));
-    console.log("BODY KEYS:", Object.keys(body ?? {}));
-    console.log("GUEST:", JSON.stringify(body?.guest));
+    console.log("[booking-hold] received request");
     const ip = req.headers.get("cf-connecting-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
     const validTurnstile = await verifyTurnstile(body.turnstile_token, ip);
-    if (!validTurnstile) return json({ code: "INVALID_TURNSTILE" }, 403);
+    if (!validTurnstile) return json({ code: "INVALID_TURNSTILE" }, 403, {}, req);
     if (!body.service_id || !body.starts_at || !body.guest) {
-      return json({ code: "INVALID_BODY", message: "service_id, starts_at and guest are required" }, 400);
+      return json({ code: "INVALID_BODY" }, 400, {}, req);
     }
 
     const supabase = serviceClient();
@@ -50,11 +50,11 @@ Deno.serve(async (req) => {
     });
     if (error) {
       console.error("RPC wp1_create_booking_hold failed:", error);
-      return json({ code: error.code ?? "RPC_ERROR", message: error.message, detail: error.details }, 500);
+      return json({ code: "SERVER_ERROR" }, 500, {}, req);
     }
     if (!data) {
       console.error("RPC wp1_create_booking_hold returned empty data");
-      return json({ code: "EMPTY_RPC_RESPONSE" }, 500);
+      return json({ code: "EMPTY_RPC_RESPONSE" }, 500, {}, req);
     }
 
     const status = data.status ?? 200;
@@ -72,9 +72,9 @@ Deno.serve(async (req) => {
       }
     }
 
-    return json(data, status);
+    return json(data, status, {}, req);
   } catch (error) {
     console.error("CRASH:", error);
-    return json({ code: "SERVER_ERROR", detail: String(error), stack: (error as Error)?.stack }, 500);
+    return json({ code: "SERVER_ERROR" }, 500, {}, req);
   }
 });

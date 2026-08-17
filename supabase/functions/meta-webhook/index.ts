@@ -3,14 +3,14 @@ import { sendTransactionalEmail } from "../_shared/email.ts";
 import { serviceClient } from "../_shared/supabase.ts";
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders(req) });
   if (req.method === "GET") {
     const url = new URL(req.url);
     const mode = url.searchParams.get("hub.mode");
     const token = url.searchParams.get("hub.verify_token");
     const challenge = url.searchParams.get("hub.challenge") ?? "";
     if (mode === "subscribe" && token === Deno.env.get("META_WEBHOOK_VERIFY_TOKEN")) {
-      return new Response(challenge, { headers: { ...corsHeaders, "content-type": "text/plain" } });
+      return new Response(challenge, { headers: { ...corsHeaders(req), "content-type": "text/plain" } });
     }
     return json({ code: "FORBIDDEN" }, 403);
   }

@@ -1,4 +1,5 @@
 import { noStoreJson } from "../_shared/http.ts";
+import { encryptToken } from "../_shared/crypto.ts";
 import { serviceClient } from "../_shared/supabase.ts";
 
 const TOKEN_ID = "barberflow-rwcutzz";
@@ -31,8 +32,8 @@ Deno.serve(async (req) => {
     const expiresAt = new Date(Date.now() + tokenResponse.expires_in * 1000).toISOString();
     const { error } = await supabase.from("mollie_tokens").upsert({
       id: TOKEN_ID,
-      access_token: tokenResponse.access_token,
-      refresh_token: tokenResponse.refresh_token,
+      access_token: await encryptToken(tokenResponse.access_token),
+      refresh_token: await encryptToken(tokenResponse.refresh_token),
       expires_at: expiresAt,
       organization_id: organization.id,
       profile_id: profile.id,
@@ -44,7 +45,7 @@ Deno.serve(async (req) => {
     return successHtml("Kapper succesvol gekoppeld aan BarberFlow. Je kunt nu aanbetalingen ontvangen.");
   } catch (error) {
     console.error("Mollie OAuth callback failed:", String(error));
-    return noStoreJson({ code: "MOLLIE_OAUTH_CALLBACK_FAILED", detail: String(error) }, 500);
+    return noStoreJson({ code: "MOLLIE_OAUTH_CALLBACK_FAILED" }, 500, req);
   }
 });
 
