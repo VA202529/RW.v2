@@ -2,9 +2,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { CheckCircle2 } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { routeHead } from "@/seo/metadata";
 
 export const Route = createFileRoute("/winkel/succes")({
-  head: () => ({ meta: [{ title: "Bestelling geplaatst — RW CUTZZ" }] }),
+  head: () =>
+    routeHead({
+      title: "Bestelling geplaatst | RW CUTZZ",
+      description: "Je bestelling is geplaatst.",
+      path: "/winkel/succes",
+      robots: "noindex, follow",
+    }),
   component: () => (
     <div className="min-h-screen bg-brand-bg flex flex-col">
       <SiteHeader />

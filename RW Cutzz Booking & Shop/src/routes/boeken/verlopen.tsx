@@ -2,9 +2,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertCircle } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { routeHead } from "@/seo/metadata";
 
 export const Route = createFileRoute("/boeken/verlopen")({
-  head: () => ({ meta: [{ title: "Reservering verlopen — RW CUTZZ" }] }),
+  head: () =>
+    routeHead({
+      title: "Reservering verlopen | RW CUTZZ",
+      description: "Je reservering is verlopen.",
+      path: "/boeken/verlopen",
+      robots: "noindex, follow",
+    }),
   component: Expired,
 });
 

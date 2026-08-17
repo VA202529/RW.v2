@@ -1,9 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { businessConfig, formatLegalAddress } from "@/config/business";
+import { routeHead } from "@/seo/metadata";
 
 export const Route = createFileRoute("/privacy")({
-  head: () => ({ meta: [{ title: "Privacybeleid - RW CUTZZ" }] }),
+  head: () =>
+    routeHead({
+      title: "Privacybeleid | RW CUTZZ",
+      description:
+        "Lees hoe RW CUTZZ persoonsgegevens verwerkt voor afspraken, bestellingen en contact.",
+      path: "/privacy",
+    }),
   component: () => (
     <div className="min-h-screen bg-brand-bg flex flex-col">
       <SiteHeader />
@@ -14,9 +22,9 @@ export const Route = createFileRoute("/privacy")({
 
         <h2 className="font-display text-xl mt-6 mb-2">Verwerkingsverantwoordelijke</h2>
         <p className="text-brand-muted">
-          RWCUTZZ, Mariëndaal 94, 1025 BW Amsterdam, KVK 94077991, is verantwoordelijk voor de
-          verwerking van persoonsgegevens via deze website en in de zaak. Voor privacyvragen kun
-          je mailen naar Chanoroch@outlook.com.
+          RWCUTZZ, juridisch gevestigd aan {formatLegalAddress()}, KVK {businessConfig.kvk}, is
+          verantwoordelijk voor de verwerking van persoonsgegevens via deze website en in de zaak.
+          Voor privacyvragen kun je mailen naar {businessConfig.email}.
         </p>
 
         <h2 className="font-display text-xl mt-6 mb-2">Welke persoonsgegevens verwerken wij?</h2>
@@ -35,30 +43,29 @@ export const Route = createFileRoute("/privacy")({
 
         <h2 className="font-display text-xl mt-6 mb-2">Bewaartermijn</h2>
         <p className="text-brand-muted">
-          Boekings- en klantgegevens bewaren wij tot 2 jaar na je laatste bezoek, tenzij een
-          langere wettelijke bewaartermijn verplicht is voor administratie of betalingen.
+          Boekings- en klantgegevens bewaren wij tot 2 jaar na je laatste bezoek, tenzij een langere
+          wettelijke bewaartermijn verplicht is voor administratie of betalingen.
         </p>
 
         <h2 className="font-display text-xl mt-6 mb-2">Betalingen, e-mail en verwerkers</h2>
         <p className="text-brand-muted">
-          Betalingen verlopen via Stripe. Lees meer op{" "}
+          Betalingen verlopen via Mollie. Lees meer op{" "}
           <a
-            href="https://stripe.com/privacy"
+            href="https://www.mollie.com/nl/privacy"
             target="_blank"
             rel="noopener noreferrer"
             className="text-brand-accent underline"
           >
-            stripe.com/privacy
+            mollie.com/nl/privacy
           </a>
-          . Transactionele e-mail loopt via Resend. Resend wordt niet gebruikt voor marketing
-          zonder toestemming. De website gebruikt Supabase voor authenticatie, database en
-          opslag.
+          . Transactionele e-mail loopt via Resend. Resend wordt niet gebruikt voor marketing zonder
+          toestemming. De website gebruikt Supabase voor authenticatie, database en opslag.
         </p>
 
         <h2 className="font-display text-xl mt-6 mb-2">Jouw rechten</h2>
         <p className="text-brand-muted">
-          Je hebt recht op inzage, correctie, verwijdering, beperking en bezwaar. Je kunt
-          gegevens beheren via je account of een verzoek sturen naar Chanoroch@outlook.com.
+          Je hebt recht op inzage, correctie, verwijdering, beperking en bezwaar. Je kunt gegevens
+          beheren via je account of een verzoek sturen naar {businessConfig.email}.
         </p>
 
         <h2 className="font-display text-xl mt-6 mb-2">Cookies</h2>

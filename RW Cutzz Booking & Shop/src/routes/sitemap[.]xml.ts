@@ -1,12 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
+import { businessConfig } from "@/config/business";
 
-const BASE_URL = "";
+const BASE_URL = businessConfig.websiteUrl;
 
 const entries = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
-  { path: "/booking", changefreq: "weekly", priority: "0.9" },
-  { path: "/shop", changefreq: "weekly", priority: "0.9" },
+  { path: "/diensten", changefreq: "weekly", priority: "0.9" },
+  { path: "/boeken", changefreq: "weekly", priority: "0.9" },
+  { path: "/winkel", changefreq: "weekly", priority: "0.8" },
+  { path: "/contact", changefreq: "monthly", priority: "0.8" },
+  { path: "/privacy", changefreq: "yearly", priority: "0.2" },
+  { path: "/voorwaarden", changefreq: "yearly", priority: "0.2" },
+  { path: "/cookies", changefreq: "yearly", priority: "0.2" },
 ];
 
 export const Route = createFileRoute("/sitemap.xml")({

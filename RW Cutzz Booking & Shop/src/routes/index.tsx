@@ -7,28 +7,48 @@ import { RelativeDate } from "@/components/RelativeDate";
 import { EmptyState } from "@/components/EmptyState";
 import { getServices, getPublicReviews } from "@/lib/api/client";
 import { euros, depositCents } from "@/lib/format";
-import { ADDRESS, OPENING_HOURS } from "@/lib/env";
+import {
+  businessConfig,
+  formatActiveAddress,
+  formatOpeningHours,
+  publicServices,
+} from "@/config/business";
+import { jsonLdScript, routeHead } from "@/seo/metadata";
+import { hairSalonJsonLd, webPageJsonLd } from "@/seo/structured-data";
 import heroImg from "@/assets/hero-cut.jpg";
 
+const description =
+  "RW CUTZZ is een kapper en barbershop in Amsterdam-Noord. Boek online je knipbeurt, baardtrim of design bij de tijdelijke locatie aan Buikslotermeerplein 13.";
+
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "RW CUTZZ — Fresher Than Clean" },
+  head: () =>
+    routeHead(
       {
-        name: "description",
-        content:
-          "RW CUTZZ — barbershop met neon precisie. Boek online, shop grooming producten.",
+        title: "RW CUTZZ | Kapper & Barbershop in Amsterdam-Noord",
+        description,
+        path: "/",
       },
-      { property: "og:title", content: "RW CUTZZ — Fresher Than Clean" },
-      { property: "og:description", content: "Boek online of shop de RW CUTZZ webshop." },
-    ],
-  }),
+      [jsonLdScript(hairSalonJsonLd()), jsonLdScript(webPageJsonLd("/", "RW CUTZZ", description))],
+    ),
   component: Home,
 });
 
 function Home() {
   const { data: services = [] } = useQuery({ queryKey: ["services"], queryFn: getServices });
   const { data: reviews = [] } = useQuery({ queryKey: ["reviews"], queryFn: getPublicReviews });
+  const serviceCards =
+    services.length > 0
+      ? services
+      : publicServices.map((service) => ({
+          id: service.id,
+          name: service.name,
+          description: service.description,
+          price_cents: service.priceCents,
+          duration_minutes: service.durationMinutes,
+          buffer_minutes: 0,
+          deposit_type: "fixed" as const,
+          deposit_value: service.depositCents,
+        }));
 
   return (
     <div className="min-h-screen bg-brand-bg text-brand-text flex flex-col">
@@ -44,20 +64,22 @@ function Home() {
         <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 items-center relative">
           <div className="lg:col-span-7">
             <p className="text-brand-accent text-xs font-bold tracking-[0.3em] uppercase mb-6">
-              RW CUTZZ · Nederland
+              RW CUTZZ · Amsterdam-Noord
             </p>
             <h1 className="font-display text-6xl md:text-8xl font-extrabold tracking-tighter leading-[0.9]">
-              FRESHER<br />
-              THAN{" "}
+              Kapper &amp;
+              <br />
+              Barbershop{" "}
               <span
                 className="italic"
                 style={{ color: "#2B3BEF", textShadow: "0 0 40px rgba(43,59,239,0.6)" }}
               >
-                CLEAN.
+                Noord.
               </span>
             </h1>
             <p className="mt-8 max-w-md text-white/70 text-lg leading-relaxed">
-              Boek online in twee minuten. Kies je dienst, kies je tijdslot, klaar.
+              {businessConfig.tagline}. Boek online je knipbeurt, baardtrim of design bij RW CUTZZ
+              aan Buikslotermeerplein 13 in Amsterdam.
             </p>
             <div className="mt-10 flex flex-wrap gap-3">
               <Link
@@ -77,7 +99,8 @@ function Home() {
           <div className="lg:col-span-5">
             <img
               src={heroImg}
-              alt="RW CUTZZ"
+              alt="Barbershop sfeer bij RW CUTZZ in Amsterdam-Noord"
+              loading="eager"
               className="w-full aspect-[4/5] object-cover rounded"
             />
           </div>
@@ -98,7 +121,7 @@ function Home() {
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {services.map((s) => {
+            {serviceCards.map((s) => {
               const dep = depositCents(s.price_cents, s.deposit_type, s.deposit_value);
               return (
                 <article
@@ -145,27 +168,34 @@ function Home() {
               Over RW CUTZZ
             </h2>
             <p className="text-brand-muted mb-6">
-              Bij RW CUTZZ draait alles om precisie en persoonlijke aandacht. Elke knipbeurt is
-              op maat. Geen haast, geen concessies — Fresher Than Clean.
+              Bij RW CUTZZ draait alles om precisie, persoonlijke aandacht en een frisse finish. Je
+              bent welkom op de tijdelijke salonlocatie in Amsterdam-Noord voor knippen,
+              baardtrimmen, kids cuts en design lines.
             </p>
             <div className="grid sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-xs uppercase tracking-widest text-brand-muted mb-1">
                   Openingstijden
                 </p>
-                <p>{OPENING_HOURS}</p>
+                <p className="whitespace-pre-line">{formatOpeningHours()}</p>
               </div>
               <div>
                 <p className="text-xs uppercase tracking-widest text-brand-muted mb-1">Adres</p>
-                <p>{ADDRESS}</p>
+                <p>{formatActiveAddress()}</p>
               </div>
             </div>
-            <div className="mt-6 aspect-[16/9] bg-brand-bg rounded overflow-hidden border border-brand-text/10">
-              <iframe
-                title="Kaart"
-                src="https://www.openstreetmap.org/export/embed.html?bbox=4.85%2C52.35%2C4.95%2C52.40&layer=mapnik"
-                className="w-full h-full"
-              />
+            <div className="mt-6 rounded border border-brand-text/10 bg-brand-bg p-5">
+              <p className="text-sm text-brand-muted">
+                Actuele klantlocatie: {businessConfig.activeLocation.label.toLowerCase()}.
+              </p>
+              <a
+                href={businessConfig.activeLocation.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex text-xs font-bold uppercase tracking-widest text-brand-accent hover:underline"
+              >
+                Open route
+              </a>
             </div>
           </div>
         </div>

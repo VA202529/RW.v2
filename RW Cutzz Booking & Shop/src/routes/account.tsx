@@ -17,9 +17,16 @@ import {
 } from "@/lib/api/client";
 import { euros, dutchDate, dutchDateShort } from "@/lib/format";
 import { useMockAuth } from "@/lib/auth";
+import { routeHead } from "@/seo/metadata";
 
 export const Route = createFileRoute("/account")({
-  head: () => ({ meta: [{ title: "Account — RW CUTZZ" }] }),
+  head: () =>
+    routeHead({
+      title: "Account | RW CUTZZ",
+      description: "Je RW CUTZZ account.",
+      path: "/account",
+      robots: "noindex, follow",
+    }),
   component: Account,
 });
 
@@ -30,14 +37,26 @@ function Account() {
     <div className="min-h-screen bg-brand-bg flex flex-col">
       <SiteHeader />
       <section className="flex-1 pt-28 pb-20 px-6 max-w-4xl mx-auto w-full">
-        {!signedIn ? <SignInBlock onDemo={signIn} onMagicLink={sendMagicLink} hasBackend={hasBackend} /> : <Dashboard onSignOut={signOut} />}
+        {!signedIn ? (
+          <SignInBlock onDemo={signIn} onMagicLink={sendMagicLink} hasBackend={hasBackend} />
+        ) : (
+          <Dashboard onSignOut={signOut} />
+        )}
       </section>
       <SiteFooter />
     </div>
   );
 }
 
-function SignInBlock({ onDemo, onMagicLink, hasBackend }: { onDemo: () => void; onMagicLink: (email: string) => Promise<void>; hasBackend: boolean }) {
+function SignInBlock({
+  onDemo,
+  onMagicLink,
+  hasBackend,
+}: {
+  onDemo: () => void;
+  onMagicLink: (email: string) => Promise<void>;
+  hasBackend: boolean;
+}) {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   return (
@@ -133,8 +152,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
   const pastCount = visiblePastBookings?.length ?? 0;
   const orderCount = orders?.length ?? 0;
   const reviewCount = reviews?.length ?? 0;
-  const visitCount = visiblePastBookings.filter((booking) => booking.status === "confirmed")
-    .length;
+  const visitCount = visiblePastBookings.filter((booking) => booking.status === "confirmed").length;
 
   return (
     <div className="grid gap-10">
@@ -144,9 +162,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
           <h1 className="font-display text-4xl font-extrabold tracking-tighter">
             {customer.full_name}
           </h1>
-          <p className="text-sm text-brand-muted mt-1">
-            Je bent {visitCount} keer geweest
-          </p>
+          <p className="text-sm text-brand-muted mt-1">Je bent {visitCount} keer geweest</p>
         </div>
         <button
           onClick={onSignOut}
@@ -336,7 +352,12 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
       <section>
         <button
           onClick={async () => {
-            if (!confirm("Weet je het zeker? Je boekingshistorie wordt geanonimiseerd. Dit kan niet ongedaan worden gemaakt.")) return;
+            if (
+              !confirm(
+                "Weet je het zeker? Je boekingshistorie wordt geanonimiseerd. Dit kan niet ongedaan worden gemaakt.",
+              )
+            )
+              return;
             try {
               await deleteAccount();
               toast.success("Account verwijderd");
@@ -423,9 +444,7 @@ function NotificationPrefs({
           </div>
         )}
         <label
-          className={`flex justify-between items-center ${
-            phone ? "" : "opacity-60"
-          }`}
+          className={`flex justify-between items-center ${phone ? "" : "opacity-60"}`}
           title={phone ? undefined : "Vul je telefoonnummer in"}
         >
           <span>WhatsApp-berichten</span>

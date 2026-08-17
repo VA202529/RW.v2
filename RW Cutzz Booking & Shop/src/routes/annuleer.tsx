@@ -4,13 +4,20 @@ import { toast } from "sonner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { cancelBooking, dutchError } from "@/lib/api/client";
+import { routeHead } from "@/seo/metadata";
 
 export const Route = createFileRoute("/annuleer")({
   validateSearch: (s: Record<string, unknown>) => ({
     token: typeof s.token === "string" ? s.token : undefined,
     booking: typeof s.booking === "string" ? s.booking : undefined,
   }),
-  head: () => ({ meta: [{ title: "Afspraak annuleren — RW CUTZZ" }] }),
+  head: () =>
+    routeHead({
+      title: "Afspraak annuleren | RW CUTZZ",
+      description: "Afspraak annuleren bij RW CUTZZ.",
+      path: "/annuleer",
+      robots: "noindex, follow",
+    }),
   component: Annuleer,
 });
 
@@ -40,9 +47,7 @@ function Annuleer() {
           Afspraak annuleren
         </h1>
         {done ? (
-          <p className="text-sm bg-brand-surface p-6 rounded border border-brand-text/10">
-            {done}
-          </p>
+          <p className="text-sm bg-brand-surface p-6 rounded border border-brand-text/10">{done}</p>
         ) : (
           <div className="grid gap-3">
             <p className="text-brand-muted mb-2">Kies wat je met de aanbetaling wil doen:</p>

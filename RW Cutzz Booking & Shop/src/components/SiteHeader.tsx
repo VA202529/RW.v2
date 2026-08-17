@@ -5,8 +5,10 @@ import { useCart } from "@/lib/cart";
 
 const links = [
   { to: "/", label: "Home" },
+  { to: "/diensten", label: "Diensten" },
   { to: "/boeken", label: "Boeken" },
   { to: "/winkel", label: "Winkel" },
+  { to: "/contact", label: "Contact" },
   { to: "/account", label: "Account" },
 ] as const;
 
@@ -62,11 +64,7 @@ export function SiteHeader() {
           >
             Boek nu
           </Link>
-          <button
-            onClick={() => setOpen((v) => !v)}
-            className="md:hidden p-2"
-            aria-label="Menu"
-          >
+          <button onClick={() => setOpen((v) => !v)} className="md:hidden p-2" aria-label="Menu">
             {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>

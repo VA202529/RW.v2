@@ -15,6 +15,9 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { CartProvider } from "../lib/cart";
 import { CartDrawer } from "../components/CartDrawer";
 import { CookieConsent } from "../components/CookieConsent";
+import { businessConfig } from "../config/business";
+import { jsonLdScript } from "../seo/metadata";
+import { websiteJsonLd } from "../seo/structured-data";
 
 function NotFoundComponent() {
   return (
@@ -22,15 +25,25 @@ function NotFoundComponent() {
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-display font-extrabold text-brand-accent">404</h1>
         <h2 className="mt-4 text-xl font-semibold">Pagina niet gevonden</h2>
-        <p className="mt-2 text-sm text-brand-muted">
-          Deze pagina bestaat niet of is verplaatst.
-        </p>
-        <div className="mt-6">
+        <p className="mt-2 text-sm text-brand-muted">Deze pagina bestaat niet of is verplaatst.</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-md bg-brand-accent px-4 py-2 text-sm font-bold uppercase tracking-widest text-white hover:glow-accent transition"
           >
             Naar home
+          </Link>
+          <Link
+            to="/diensten"
+            className="inline-flex items-center justify-center rounded-md border border-brand-text/20 bg-brand-surface px-4 py-2 text-sm font-medium"
+          >
+            Diensten
+          </Link>
+          <Link
+            to="/contact"
+            className="inline-flex items-center justify-center rounded-md border border-brand-text/20 bg-brand-surface px-4 py-2 text-sm font-medium"
+          >
+            Contact
           </Link>
         </div>
       </div>
@@ -80,18 +93,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { name: "theme-color", content: "#2B3BEF" },
-      { title: "RW CUTZZ — Fresher Than Clean" },
+      { title: businessConfig.seo.defaultTitle },
       {
         name: "description",
-        content:
-          "RW CUTZZ — barbershop met neon precisie. Boek online, shop grooming producten. Fresher Than Clean.",
+        content: businessConfig.seo.defaultDescription,
       },
-      { property: "og:title", content: "RW CUTZZ — Fresher Than Clean" },
+      { name: "robots", content: "index, follow" },
+      { property: "og:locale", content: businessConfig.seo.locale },
+      { property: "og:title", content: businessConfig.seo.defaultTitle },
       {
         property: "og:description",
-        content: "Boek online of shop de RW CUTZZ webshop.",
+        content: businessConfig.seo.defaultDescription,
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: businessConfig.websiteUrl },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
@@ -105,6 +120,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600;700&display=swap",
       },
     ],
+    scripts: [jsonLdScript(websiteJsonLd())],
   }),
   shellComponent: RootShell,
   component: RootComponent,

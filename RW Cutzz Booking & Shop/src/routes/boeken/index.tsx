@@ -18,17 +18,26 @@ import {
 } from "@/lib/api/client";
 import { euros, depositCents, dutchDate } from "@/lib/format";
 import type { Guest } from "@/lib/api/types";
+import { businessConfig, formatActiveAddress, publicServices } from "@/config/business";
+import { jsonLdScript, routeHead } from "@/seo/metadata";
+import { webPageJsonLd } from "@/seo/structured-data";
+
+const description =
+  "Boek online een afspraak bij RW CUTZZ in Amsterdam-Noord voor knippen, baardtrimmen, kids cuts of design lines.";
 
 export const Route = createFileRoute("/boeken/")({
   validateSearch: (s: Record<string, unknown>) => ({
     service: typeof s.service === "string" ? s.service : undefined,
   }),
-  head: () => ({
-    meta: [
-      { title: "Boek een afspraak — RW CUTZZ" },
-      { name: "description", content: "Boek online in vier stappen." },
-    ],
-  }),
+  head: () =>
+    routeHead(
+      {
+        title: "Afspraak boeken bij RW CUTZZ | Amsterdam-Noord",
+        description,
+        path: "/boeken",
+      },
+      [jsonLdScript(webPageJsonLd("/boeken", "Afspraak boeken bij RW CUTZZ", description))],
+    ),
   component: Boeken,
 });
 
@@ -99,14 +108,18 @@ function Boeken() {
             Boeken
           </p>
           <h1 className="font-display text-4xl md:text-5xl font-extrabold tracking-tighter mb-8">
-            Reserveer je stoel
+            Boek je afspraak bij RW CUTZZ
           </h1>
+          <p className="mb-8 max-w-2xl text-sm text-brand-muted">
+            Kies je behandeling en tijdslot voor de tijdelijke salonlocatie aan{" "}
+            {businessConfig.activeLocation.streetAddress} in Amsterdam-Noord.
+          </p>
 
           {/* Progress */}
           <ol className="grid grid-cols-4 gap-2 mb-10 text-[11px] uppercase tracking-widest">
             {["Dienst", "Datum & tijd", "Gegevens", "Betaling"].map((label, i) => {
-              const active = state.step === (i + 1);
-              const done = state.step > (i + 1);
+              const active = state.step === i + 1;
+              const done = state.step > i + 1;
               return (
                 <li
                   key={label}
@@ -151,11 +164,6 @@ function Boeken() {
               onBack={() => dispatch({ type: "back" })}
               onSubmit={async (g, t) => {
                 try {
-                  console.log('STATE BEFORE HOLD:', JSON.stringify({
-                    slot: state.slot,
-                    service_id: selectedService?.id,
-                    service_defined: !!selectedService,
-                  }));
                   const res = await createBookingHold({
                     service_id: selectedService.id,
                     starts_at: state.slot!,
@@ -207,6 +215,27 @@ function Boeken() {
               }}
             />
           )}
+        </div>
+      </section>
+      <section className="px-6 pb-16">
+        <div className="max-w-5xl mx-auto border-t border-brand-text/10 pt-10">
+          <h2 className="font-display text-3xl font-extrabold tracking-tight">
+            Diensten en prijzen
+          </h2>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            {publicServices.map((service) => (
+              <article
+                key={service.id}
+                className="bg-brand-surface border border-brand-text/10 p-5"
+              >
+                <h3 className="font-display text-xl">{service.name}</h3>
+                <p className="mt-2 text-sm text-brand-muted">{service.description}</p>
+                <p className="mt-3 text-sm">
+                  Vanaf {euros(service.priceCents)} · aanbetaling {euros(service.depositCents)}
+                </p>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
       <SiteFooter />
@@ -303,8 +332,7 @@ function Step2({
 
   const { data: slots = [], isLoading } = useQuery({
     queryKey: ["slots", serviceId, date],
-    queryFn: () =>
-      getSlots({ service_id: serviceId, from: date, to: date }),
+    queryFn: () => getSlots({ service_id: serviceId, from: date, to: date }),
   });
 
   const weekdays = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
@@ -384,7 +412,6 @@ function Step2({
         </div>
       </div>
 
-
       <div>
         <div className="flex items-center justify-between mb-4">
           <p className="text-xs uppercase tracking-widest text-brand-muted">Tijd</p>
@@ -426,7 +453,6 @@ function Step2({
       </div>
 
       <div className="flex justify-between pt-4 md:col-span-2">
-
         <button onClick={onBack} className="text-xs font-bold uppercase tracking-widest">
           ← Terug
         </button>
@@ -462,8 +488,7 @@ function Step3({
         }}
       />
       <p className="text-xs text-brand-muted">
-        Kosteloos annuleren of verzetten tot 24 uur voor je afspraak. Daarna vervalt de
-        aanbetaling.
+        Kosteloos annuleren of verzetten tot 24 uur voor je afspraak. Daarna vervalt de aanbetaling.
       </p>
       <button onClick={onBack} className="text-xs font-bold uppercase tracking-widest text-left">
         ← Terug
@@ -506,7 +531,7 @@ function Step4({
           </div>
           <div className="flex justify-between">
             <span>Locatie</span>
-            <span className="font-medium">RW CUTZZ, Mariëndaal 94, 1025 BW Amsterdam</span>
+            <span className="font-medium">RW CUTZZ, {formatActiveAddress()}</span>
           </div>
           <div className="flex justify-between pt-2 border-t border-brand-text/10">
             <span>Aanbetaling</span>

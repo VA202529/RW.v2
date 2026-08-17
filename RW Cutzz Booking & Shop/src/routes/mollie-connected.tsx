@@ -2,9 +2,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { CheckCircle2 } from "lucide-react";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { routeHead } from "@/seo/metadata";
 
 export const Route = createFileRoute("/mollie-connected")({
-  head: () => ({ meta: [{ title: "Mollie gekoppeld - RW CUTZZ" }] }),
+  head: () =>
+    routeHead({
+      title: "Mollie gekoppeld | RW CUTZZ",
+      description: "Mollie is gekoppeld.",
+      path: "/mollie-connected",
+      robots: "noindex, follow",
+    }),
   component: MollieConnected,
 });
 

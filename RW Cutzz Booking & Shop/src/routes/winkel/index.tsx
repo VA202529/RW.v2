@@ -6,14 +6,22 @@ import { EmptyState } from "@/components/EmptyState";
 import { useCart } from "@/lib/cart";
 import { getProducts } from "@/lib/api/client";
 import { euros } from "@/lib/format";
+import { jsonLdScript, routeHead } from "@/seo/metadata";
+import { webPageJsonLd } from "@/seo/structured-data";
+
+const description =
+  "Shop grooming producten en merch van RW CUTZZ. Bestellingen worden klaargezet om af te halen in de salon.";
 
 export const Route = createFileRoute("/winkel/")({
-  head: () => ({
-    meta: [
-      { title: "Webshop — RW CUTZZ" },
-      { name: "description", content: "Grooming producten en merch van RW CUTZZ." },
-    ],
-  }),
+  head: () =>
+    routeHead(
+      {
+        title: "Webshop | RW CUTZZ",
+        description,
+        path: "/winkel",
+      },
+      [jsonLdScript(webPageJsonLd("/winkel", "RW CUTZZ Webshop", description))],
+    ),
   component: Winkel,
 });
 
@@ -40,6 +48,10 @@ function Winkel() {
           <h1 className="font-display text-5xl md:text-6xl font-extrabold tracking-tighter">
             Grooming &amp; merch
           </h1>
+          <p className="mt-5 max-w-2xl text-brand-muted">
+            Bestel producten online en haal ze op bij RW CUTZZ in Amsterdam-Noord zodra je bericht
+            krijgt dat je bestelling klaarligt.
+          </p>
         </div>
       </section>
 
@@ -81,9 +93,7 @@ function Winkel() {
                       {soldOut ? (
                         <span className="text-xs text-brand-muted">Uitverkocht</span>
                       ) : p.stock <= 5 ? (
-                        <span className="text-xs text-brand-accent">
-                          Nog {p.stock} beschikbaar
-                        </span>
+                        <span className="text-xs text-brand-accent">Nog {p.stock} beschikbaar</span>
                       ) : null}
                       <button
                         onClick={() => {

@@ -3,9 +3,16 @@ import { CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { routeHead } from "@/seo/metadata";
 
 export const Route = createFileRoute("/boeken/succes")({
-  head: () => ({ meta: [{ title: "Afspraak bevestigd — RW CUTZZ" }] }),
+  head: () =>
+    routeHead({
+      title: "Afspraak bevestigd | RW CUTZZ",
+      description: "Je afspraak is bevestigd.",
+      path: "/boeken/succes",
+      robots: "noindex, follow",
+    }),
   component: Success,
 });
 
@@ -30,7 +37,11 @@ function isInstalled() {
 function downloadIcs() {
   const start = new Date(Date.now() + 3 * 24 * 3600 * 1000);
   const end = new Date(start.getTime() + 30 * 60 * 1000);
-  const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const fmt = (d: Date) =>
+    d
+      .toISOString()
+      .replace(/[-:]/g, "")
+      .replace(/\.\d{3}/, "");
   const ics = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//RW CUTZZ//NL

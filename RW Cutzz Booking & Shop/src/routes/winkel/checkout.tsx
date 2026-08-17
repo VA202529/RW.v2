@@ -8,9 +8,16 @@ import { EmptyState } from "@/components/EmptyState";
 import { useCart } from "@/lib/cart";
 import { getProducts, createOrder, createOrderCheckout, dutchError } from "@/lib/api/client";
 import { euros } from "@/lib/format";
+import { routeHead } from "@/seo/metadata";
 
 export const Route = createFileRoute("/winkel/checkout")({
-  head: () => ({ meta: [{ title: "Afrekenen — RW CUTZZ" }] }),
+  head: () =>
+    routeHead({
+      title: "Afrekenen | RW CUTZZ",
+      description: "Afrekenen bij RW CUTZZ.",
+      path: "/winkel/checkout",
+      robots: "noindex, follow",
+    }),
   component: Checkout,
 });
 
@@ -63,15 +70,13 @@ function Checkout() {
                   }}
                 />
                 <p className="text-[11px] text-brand-muted mt-4">
-                  Herroepingsrecht: je hebt het recht om binnen 14 dagen na ontvangst je
-                  bestelling te retourneren, tenzij de verzegeling van het product verbroken is.
+                  Herroepingsrecht: je hebt het recht om binnen 14 dagen na ontvangst je bestelling
+                  te retourneren, tenzij de verzegeling van het product verbroken is.
                 </p>
               </div>
 
               <aside className="bg-brand-surface border border-brand-text/10 rounded p-6">
-                <p className="text-xs uppercase tracking-widest text-brand-muted mb-4">
-                  Overzicht
-                </p>
+                <p className="text-xs uppercase tracking-widest text-brand-muted mb-4">Overzicht</p>
                 <ul className="grid gap-3 text-sm">
                   {lines.map((l) => (
                     <li key={l.product_id} className="flex justify-between gap-2">

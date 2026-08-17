@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { StarRating } from "@/components/StarRating";
 import { getBookingSummary, submitReview, dutchError } from "@/lib/api/client";
 import { dutchDate } from "@/lib/format";
+import { routeHead } from "@/seo/metadata";
 
 export const Route = createFileRoute("/review/$bookingId")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -15,7 +16,13 @@ export const Route = createFileRoute("/review/$bookingId")({
   beforeLoad: ({ search }) => {
     if (!search.token) throw redirect({ to: "/" });
   },
-  head: () => ({ meta: [{ title: "Review achterlaten — RW CUTZZ" }] }),
+  head: () =>
+    routeHead({
+      title: "Review achterlaten | RW CUTZZ",
+      description: "Laat een review achter voor je afspraak.",
+      path: "/review",
+      robots: "noindex, follow",
+    }),
   component: ReviewPage,
 });
 

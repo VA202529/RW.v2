@@ -6,9 +6,16 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { useCart } from "@/lib/cart";
 import { getProducts } from "@/lib/api/client";
 import { euros } from "@/lib/format";
+import { routeHead } from "@/seo/metadata";
+import { productJsonLd } from "@/seo/structured-data";
 
 export const Route = createFileRoute("/winkel/$id")({
-  head: () => ({ meta: [{ title: "Product — RW CUTZZ" }] }),
+  head: ({ params }) =>
+    routeHead({
+      title: "Product | RW CUTZZ",
+      description: "Bekijk dit product in de RW CUTZZ webshop.",
+      path: `/winkel/${params.id}`,
+    }),
   component: ProductPage,
 });
 
@@ -36,9 +43,14 @@ function ProductPage() {
   if (!p) throw notFound();
 
   const soldOut = p.stock === 0;
+  const productSchema = productJsonLd(p);
 
   return (
     <div className="min-h-screen bg-brand-bg flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+      />
       <SiteHeader />
       <section className="pt-28 pb-20 px-6">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10">
@@ -55,9 +67,7 @@ function ProductPage() {
             <p className="text-[10px] uppercase tracking-widest text-brand-muted mt-6">
               {p.category}
             </p>
-            <h1 className="font-display text-4xl font-extrabold tracking-tighter mt-2">
-              {p.name}
-            </h1>
+            <h1 className="font-display text-4xl font-extrabold tracking-tighter mt-2">{p.name}</h1>
             <p className="text-2xl text-brand-accent font-bold mt-3">
               {euros(p.price_cents)}{" "}
               <span className="text-xs text-brand-muted font-normal">incl. BTW</span>

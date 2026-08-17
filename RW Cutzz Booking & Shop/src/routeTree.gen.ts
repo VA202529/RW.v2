@@ -14,7 +14,9 @@ import { Route as UitschrijvenRouteImport } from './routes/uitschrijven'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as MollieConnectedRouteImport } from './routes/mollie-connected'
+import { Route as DienstenRouteImport } from './routes/diensten'
 import { Route as CookiesRouteImport } from './routes/cookies'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AnnuleerRouteImport } from './routes/annuleer'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
@@ -53,9 +55,19 @@ const MollieConnectedRoute = MollieConnectedRouteImport.update({
   path: '/mollie-connected',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DienstenRoute = DienstenRouteImport.update({
+  id: '/diensten',
+  path: '/diensten',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CookiesRoute = CookiesRouteImport.update({
   id: '/cookies',
   path: '/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnnuleerRoute = AnnuleerRouteImport.update({
@@ -123,7 +135,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/annuleer': typeof AnnuleerRoute
+  '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
+  '/diensten': typeof DienstenRoute
   '/mollie-connected': typeof MollieConnectedRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -143,7 +157,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/annuleer': typeof AnnuleerRoute
+  '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
+  '/diensten': typeof DienstenRoute
   '/mollie-connected': typeof MollieConnectedRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -164,7 +180,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
   '/annuleer': typeof AnnuleerRoute
+  '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
+  '/diensten': typeof DienstenRoute
   '/mollie-connected': typeof MollieConnectedRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -186,7 +204,9 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/annuleer'
+    | '/contact'
     | '/cookies'
+    | '/diensten'
     | '/mollie-connected'
     | '/privacy'
     | '/sitemap.xml'
@@ -206,7 +226,9 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/annuleer'
+    | '/contact'
     | '/cookies'
+    | '/diensten'
     | '/mollie-connected'
     | '/privacy'
     | '/sitemap.xml'
@@ -226,7 +248,9 @@ export interface FileRouteTypes {
     | '/'
     | '/account'
     | '/annuleer'
+    | '/contact'
     | '/cookies'
+    | '/diensten'
     | '/mollie-connected'
     | '/privacy'
     | '/sitemap.xml'
@@ -247,7 +271,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
   AnnuleerRoute: typeof AnnuleerRoute
+  ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
+  DienstenRoute: typeof DienstenRoute
   MollieConnectedRoute: typeof MollieConnectedRoute
   PrivacyRoute: typeof PrivacyRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -301,11 +327,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MollieConnectedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/diensten': {
+      id: '/diensten'
+      path: '/diensten'
+      fullPath: '/diensten'
+      preLoaderRoute: typeof DienstenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cookies': {
       id: '/cookies'
       path: '/cookies'
       fullPath: '/cookies'
       preLoaderRoute: typeof CookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/annuleer': {
@@ -399,7 +439,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
   AnnuleerRoute: AnnuleerRoute,
+  ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
+  DienstenRoute: DienstenRoute,
   MollieConnectedRoute: MollieConnectedRoute,
   PrivacyRoute: PrivacyRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

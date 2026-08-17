@@ -1,28 +1,31 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { routeHead } from "@/seo/metadata";
 
 export const Route = createFileRoute("/cookies")({
-  head: () => ({ meta: [{ title: "Cookiebeleid - RW CUTZZ" }] }),
+  head: () =>
+    routeHead({
+      title: "Cookiebeleid | RW CUTZZ",
+      description: "Lees het cookiebeleid van RW CUTZZ.",
+      path: "/cookies",
+    }),
   component: () => (
     <div className="min-h-screen bg-brand-bg flex flex-col">
       <SiteHeader />
       <article className="flex-1 pt-28 pb-20 px-6 max-w-3xl mx-auto">
-        <h1 className="font-display text-4xl font-extrabold tracking-tighter mb-8">
-          Cookiebeleid
-        </h1>
+        <h1 className="font-display text-4xl font-extrabold tracking-tighter mb-8">Cookiebeleid</h1>
 
         <h2 className="font-display text-xl mt-6 mb-2">Wat zijn cookies?</h2>
         <p className="text-brand-muted">
-          Cookies zijn kleine bestanden die je browser opslaat om een website goed te laten
-          werken.
+          Cookies zijn kleine bestanden die je browser opslaat om een website goed te laten werken.
         </p>
 
         <h2 className="font-display text-xl mt-6 mb-2">Welke cookies gebruikt RWCUTZZ?</h2>
         <p className="text-brand-muted">
-          RWCUTZZ gebruikt alleen functionele cookies en vergelijkbare lokale opslag die nodig
-          zijn om de website te laten werken. Denk aan de Supabase sessie voor inloggen en het
-          onthouden van noodzakelijke accountstatus.
+          RWCUTZZ gebruikt alleen functionele cookies en vergelijkbare lokale opslag die nodig zijn
+          om de website te laten werken. Denk aan de Supabase sessie voor inloggen en het onthouden
+          van noodzakelijke accountstatus.
         </p>
 
         <h2 className="font-display text-xl mt-6 mb-2">Geen tracking of advertenties</h2>
@@ -38,8 +41,8 @@ export const Route = createFileRoute("/cookies")({
 
         <h2 className="font-display text-xl mt-6 mb-2">Cookies beheren</h2>
         <p className="text-brand-muted">
-          Je kunt cookies verwijderen via de instellingen van je browser. Als je functionele
-          cookies verwijdert, moet je mogelijk opnieuw inloggen.
+          Je kunt cookies verwijderen via de instellingen van je browser. Als je functionele cookies
+          verwijdert, moet je mogelijk opnieuw inloggen.
         </p>
 
         <h2 className="font-display text-xl mt-6 mb-2">Taal</h2>

@@ -2,9 +2,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertCircle } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { routeHead } from "@/seo/metadata";
 
 export const Route = createFileRoute("/winkel/mislukt")({
-  head: () => ({ meta: [{ title: "Betaling mislukt — RW CUTZZ" }] }),
+  head: () =>
+    routeHead({
+      title: "Betaling mislukt | RW CUTZZ",
+      description: "De betaling is mislukt.",
+      path: "/winkel/mislukt",
+      robots: "noindex, follow",
+    }),
   component: () => (
     <div className="min-h-screen bg-brand-bg flex flex-col">
       <SiteHeader />

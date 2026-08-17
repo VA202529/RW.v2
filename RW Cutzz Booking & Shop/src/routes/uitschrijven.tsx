@@ -3,12 +3,19 @@ import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { unsubscribe } from "@/lib/api/client";
+import { routeHead } from "@/seo/metadata";
 
 export const Route = createFileRoute("/uitschrijven")({
   validateSearch: (s: Record<string, unknown>) => ({
     token: typeof s.token === "string" ? s.token : undefined,
   }),
-  head: () => ({ meta: [{ title: "Uitschrijven — RW CUTZZ" }] }),
+  head: () =>
+    routeHead({
+      title: "Uitschrijven | RW CUTZZ",
+      description: "Uitschrijven voor berichten van RW CUTZZ.",
+      path: "/uitschrijven",
+      robots: "noindex, follow",
+    }),
   component: Unsub,
 });
 
@@ -25,9 +32,7 @@ function Unsub() {
     <div className="min-h-screen bg-brand-bg flex flex-col">
       <SiteHeader />
       <section className="pt-28 pb-20 px-6 max-w-2xl mx-auto text-center">
-        <h1 className="font-display text-4xl font-extrabold tracking-tighter mb-4">
-          Uitschrijven
-        </h1>
+        <h1 className="font-display text-4xl font-extrabold tracking-tighter mb-4">Uitschrijven</h1>
         {status === "loading" && <p>Bezig...</p>}
         {status === "done" && (
           <p className="text-brand-muted">
@@ -35,9 +40,7 @@ function Unsub() {
           </p>
         )}
         {status === "error" && (
-          <p className="text-brand-muted">
-            Kon je niet uitschrijven — ongeldige of verlopen link.
-          </p>
+          <p className="text-brand-muted">Kon je niet uitschrijven — ongeldige of verlopen link.</p>
         )}
         <Link
           to="/"
