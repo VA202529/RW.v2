@@ -2,8 +2,8 @@ import { handleOptions, noStoreJson } from "../_shared/http.ts";
 import {
   centsToMollieValue,
   mollieCheckoutUrl,
-  mollieConfig,
-  mollieRequest,
+  mollieBearerRequest,
+  mollieMode,
   type MolliePayment,
 } from "../_shared/mollie.ts";
 import { serviceClient } from "../_shared/supabase.ts";
@@ -11,12 +11,13 @@ import { sendTransactionalEmail } from "../_shared/email.ts";
 import { bodyComponent, cents, dateParts, firstName, sendWhatsAppTemplate } from "../_shared/whatsapp.ts";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const MOLLIE_TOKEN_ID = "barberflow-rwcutzz";
 
 Deno.serve(async (req) => {
   try {
-    const { mode } = mollieConfig();
+    const mode = mollieMode();
     console.log("MOLLIE_MODE:", mode);
-    console.log("Selected Mollie API key set: true");
+    console.log("Selected Mollie OAuth token id:", MOLLIE_TOKEN_ID);
 
     const options = handleOptions(req);
     if (options) return options;
@@ -30,6 +31,7 @@ Deno.serve(async (req) => {
     }
 
     const supabase = serviceClient();
+    const mollieToken = await getMollieToken(supabase);
     const { data, error } = await supabase.rpc("wp_mollie_prepare_booking_checkout", {
       p_booking_id: bookingId,
       p_service_id: serviceId,
@@ -44,7 +46,10 @@ Deno.serve(async (req) => {
     }
 
     if (data.mollie_payment_id) {
-      const existing = await mollieRequest<MolliePayment>(`/payments/${encodeURIComponent(data.mollie_payment_id)}`);
+      const existing = await mollieBearerRequest<MolliePayment>(
+        `/payments/${encodeURIComponent(data.mollie_payment_id)}`,
+        mollieToken.access_token,
+      );
       if (existing.mode !== mode) throw new Error("Mollie payment mode mismatch");
       if (existing.status === "open" || existing.status === "pending") {
         return noStoreJson({
@@ -59,17 +64,23 @@ Deno.serve(async (req) => {
     const supabaseUrl = (Deno.env.get("SUPABASE_URL") ?? "").replace(/\/$/, "");
     if (!siteUrl || !supabaseUrl) throw new Error("Missing PUBLIC_SITE_URL or SUPABASE_URL");
 
-    const payment = await mollieRequest<MolliePayment>(
+    const payment = await mollieBearerRequest<MolliePayment>(
       "/payments",
+      mollieToken.access_token,
       {
         method: "POST",
         body: JSON.stringify({
+          profileId: mollieToken.profile_id,
           amount: { currency: "EUR", value: centsToMollieValue(data.amount_due_cents) },
           description: `${data.service_name} - afspraak ${bookingId.slice(0, 8)}`,
           redirectUrl: `${siteUrl}/boeken/succes?booking_id=${encodeURIComponent(bookingId)}`,
           cancelUrl: `${siteUrl}/boeken/verlopen`,
           webhookUrl: `${supabaseUrl}/functions/v1/mollie-webhook`,
           method: "ideal",
+          applicationFee: {
+            amount: { currency: "EUR", value: "0.61" },
+            description: "Van Appiah platform fee",
+          },
           metadata: { booking_id: bookingId, service_id: serviceId, payment_mode: mode },
         }),
       },
@@ -91,6 +102,61 @@ Deno.serve(async (req) => {
     return noStoreJson({ code: "SERVER_ERROR", detail: String(error) }, 500);
   }
 });
+
+async function getMollieToken(supabase: ReturnType<typeof serviceClient>) {
+  const { data, error } = await supabase
+    .from("mollie_tokens")
+    .select("access_token,refresh_token,expires_at,profile_id")
+    .eq("id", MOLLIE_TOKEN_ID)
+    .single();
+  if (error || !data?.access_token || !data?.profile_id) {
+    throw error ?? new Error("Mollie OAuth token is not connected");
+  }
+
+  if (new Date(data.expires_at).getTime() > Date.now() + 60_000) {
+    return data as { access_token: string; refresh_token: string | null; expires_at: string; profile_id: string };
+  }
+
+  const refreshed = await refreshMollieToken(data.refresh_token);
+  const nextToken = {
+    access_token: refreshed.access_token,
+    refresh_token: refreshed.refresh_token ?? data.refresh_token,
+    expires_at: new Date(Date.now() + refreshed.expires_in * 1000).toISOString(),
+    profile_id: data.profile_id,
+  };
+  const { error: updateError } = await supabase
+    .from("mollie_tokens")
+    .update({
+      access_token: nextToken.access_token,
+      refresh_token: nextToken.refresh_token,
+      expires_at: nextToken.expires_at,
+    })
+    .eq("id", MOLLIE_TOKEN_ID);
+  if (updateError) throw updateError;
+  return nextToken;
+}
+
+async function refreshMollieToken(refreshTokenValue: string | null) {
+  if (!refreshTokenValue) throw new Error("Missing Mollie refresh token");
+  const response = await fetch("https://api.mollie.com/oauth2/tokens", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      client_id: requiredEnv("MOLLIE_CLIENT_ID"),
+      client_secret: requiredEnv("MOLLIE_CLIENT_SECRET"),
+      refresh_token: refreshTokenValue,
+    }),
+  });
+  if (!response.ok) throw new Error(`Token refresh failed ${response.status}: ${await response.text()}`);
+  return await response.json() as { access_token: string; refresh_token?: string; expires_in: number };
+}
+
+function requiredEnv(name: string) {
+  const value = Deno.env.get(name);
+  if (!value || value === "PLACEHOLDER") throw new Error(`Missing ${name}`);
+  return value;
+}
 
 async function sendBookingConfirmation(supabase: ReturnType<typeof serviceClient>, bookingId: string) {
   const details = await bookingDetails(supabase, bookingId);

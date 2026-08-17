@@ -13,6 +13,7 @@ import { Route as VoorwaardenRouteImport } from './routes/voorwaarden'
 import { Route as UitschrijvenRouteImport } from './routes/uitschrijven'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as MollieConnectedRouteImport } from './routes/mollie-connected'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as AnnuleerRouteImport } from './routes/annuleer'
 import { Route as AccountRouteImport } from './routes/account'
@@ -45,6 +46,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MollieConnectedRoute = MollieConnectedRouteImport.update({
+  id: '/mollie-connected',
+  path: '/mollie-connected',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CookiesRoute = CookiesRouteImport.update({
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AccountRoute
   '/annuleer': typeof AnnuleerRoute
   '/cookies': typeof CookiesRoute
+  '/mollie-connected': typeof MollieConnectedRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/uitschrijven': typeof UitschrijvenRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/account': typeof AccountRoute
   '/annuleer': typeof AnnuleerRoute
   '/cookies': typeof CookiesRoute
+  '/mollie-connected': typeof MollieConnectedRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/uitschrijven': typeof UitschrijvenRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/account': typeof AccountRoute
   '/annuleer': typeof AnnuleerRoute
   '/cookies': typeof CookiesRoute
+  '/mollie-connected': typeof MollieConnectedRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/uitschrijven': typeof UitschrijvenRoute
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/annuleer'
     | '/cookies'
+    | '/mollie-connected'
     | '/privacy'
     | '/sitemap.xml'
     | '/uitschrijven'
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/annuleer'
     | '/cookies'
+    | '/mollie-connected'
     | '/privacy'
     | '/sitemap.xml'
     | '/uitschrijven'
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/annuleer'
     | '/cookies'
+    | '/mollie-connected'
     | '/privacy'
     | '/sitemap.xml'
     | '/uitschrijven'
@@ -236,6 +248,7 @@ export interface RootRouteChildren {
   AccountRoute: typeof AccountRoute
   AnnuleerRoute: typeof AnnuleerRoute
   CookiesRoute: typeof CookiesRoute
+  MollieConnectedRoute: typeof MollieConnectedRoute
   PrivacyRoute: typeof PrivacyRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UitschrijvenRoute: typeof UitschrijvenRoute
@@ -279,6 +292,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mollie-connected': {
+      id: '/mollie-connected'
+      path: '/mollie-connected'
+      fullPath: '/mollie-connected'
+      preLoaderRoute: typeof MollieConnectedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cookies': {
@@ -380,6 +400,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountRoute: AccountRoute,
   AnnuleerRoute: AnnuleerRoute,
   CookiesRoute: CookiesRoute,
+  MollieConnectedRoute: MollieConnectedRoute,
   PrivacyRoute: PrivacyRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   UitschrijvenRoute: UitschrijvenRoute,

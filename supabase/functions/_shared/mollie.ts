@@ -14,8 +14,7 @@ export type MolliePayment = {
 };
 
 export function mollieConfig() {
-  const mode = Deno.env.get("MOLLIE_MODE") ?? "test";
-  if (mode !== "test" && mode !== "live") throw new Error("MOLLIE_MODE must be test or live");
+  const mode = mollieMode();
   const apiKey = mode === "live"
     ? Deno.env.get("MOLLIE_LIVE_API_KEY")
     : Deno.env.get("MOLLIE_TEST_API_KEY");
@@ -29,14 +28,29 @@ export function mollieConfig() {
   return { apiKey, mode } as { apiKey: string; mode: MollieMode };
 }
 
+export function mollieMode() {
+  const mode = Deno.env.get("MOLLIE_MODE") ?? "test";
+  if (mode !== "test" && mode !== "live") throw new Error("MOLLIE_MODE must be test or live");
+  return mode;
+}
+
 export async function mollieRequest<T>(
   path: string,
   init: RequestInit = {},
   idempotencyKey?: string,
 ): Promise<T> {
   const { apiKey } = mollieConfig();
+  return mollieBearerRequest<T>(path, apiKey, init, idempotencyKey);
+}
+
+export async function mollieBearerRequest<T>(
+  path: string,
+  accessToken: string,
+  init: RequestInit = {},
+  idempotencyKey?: string,
+): Promise<T> {
   const headers = new Headers(init.headers);
-  headers.set("Authorization", `Bearer ${apiKey}`);
+  headers.set("Authorization", `Bearer ${accessToken}`);
   headers.set("Accept", "application/hal+json");
   if (init.body) headers.set("Content-Type", "application/json");
   if (idempotencyKey) headers.set("Idempotency-Key", idempotencyKey);
