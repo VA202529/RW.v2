@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const bookingId = typeof body?.booking_id === "string" ? body.booking_id : "";
     const serviceId = typeof body?.service_id === "string" ? body.service_id : "";
-    console.log("[mollie-checkout] creating payment for booking:", bookingId);
+    console.log("[mollie-checkout] creating payment");
     if (!UUID_PATTERN.test(bookingId) || !UUID_PATTERN.test(serviceId)) {
       return noStoreJson({ code: "INVALID_BODY" }, 400, req);
     }

@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    console.log("[booking-hold] received request");
+    console.log("[booking-hold] received");
     const ip = req.headers.get("cf-connecting-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
     const validTurnstile = await verifyTurnstile(body.turnstile_token, ip);
     if (!validTurnstile) return json({ code: "INVALID_TURNSTILE" }, 403, {}, req);

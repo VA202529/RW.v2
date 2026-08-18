@@ -79,7 +79,7 @@ export async function createBookingHold(args: {
   guest: Guest;
   turnstile_token: string;
 }): Promise<{ booking_id: string; cancel_token: string; expires_at: string }> {
-  console.log("[booking-hold] received request");
+  console.log("[booking-hold] received");
   if (!HAS_BACKEND) {
     await sleep(400);
     return {

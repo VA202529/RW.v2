@@ -11,6 +11,7 @@ Deno.serve(async (req) => {
   try {
     const paymentId = await readPaymentId(req);
     if (!PAYMENT_ID_PATTERN.test(paymentId)) return noStoreJson({ received: true, ignored: true });
+    console.log("[mollie-webhook] processing payment:", paymentId);
 
     const supabase = serviceClient();
     const accessToken = await getMollieAccessToken(supabase);
