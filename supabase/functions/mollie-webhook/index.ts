@@ -1,22 +1,24 @@
 import { noStoreJson } from "../_shared/http.ts";
-import { mollieConfig, mollieRequest, mollieValueToCents, type MolliePayment } from "../_shared/mollie.ts";
+import { mollieMode, mollieRequest, mollieValueToCents, type MolliePayment } from "../_shared/mollie.ts";
 import { serviceClient } from "../_shared/supabase.ts";
 import { sendTransactionalEmail } from "../_shared/email.ts";
 import { bodyComponent, cents, dateParts, firstName, sendWhatsAppTemplate } from "../_shared/whatsapp.ts";
 
 const PAYMENT_ID_PATTERN = /^tr_[A-Za-z0-9]{5,64}$/;
+const MOLLIE_TOKEN_ID = "barberflow-rwcutzz";
 
 Deno.serve(async (req) => {
   try {
     const paymentId = await readPaymentId(req);
     if (!PAYMENT_ID_PATTERN.test(paymentId)) return noStoreJson({ received: true, ignored: true });
 
-    const payment = await mollieRequest<MolliePayment>(`/payments/${encodeURIComponent(paymentId)}`);
-    const { mode } = mollieConfig();
+    const supabase = serviceClient();
+    const accessToken = await getMollieAccessToken(supabase);
+    const payment = await mollieRequest<MolliePayment>(`/payments/${encodeURIComponent(paymentId)}`, {}, accessToken);
+    const mode = mollieMode();
     if (payment.mode !== mode) throw new Error("Mollie payment mode mismatch");
     if (payment.amount?.currency !== "EUR") throw new Error("Unexpected Mollie currency");
 
-    const supabase = serviceClient();
     const { data: stored, error: storedError } = await supabase
       .from("payments")
       .select("id,booking_id,amount_cents,payment_mode,status")
@@ -43,7 +45,7 @@ Deno.serve(async (req) => {
           description: `Automatische terugbetaling boeking ${stored.booking_id}`,
           metadata: { booking_id: stored.booking_id, reason: "slot_conflict" },
         }),
-      }, `booking-conflict-${stored.booking_id}`);
+      }, accessToken, `booking-conflict-${stored.booking_id}`);
       await supabase.rpc("wp_mollie_mark_refunded_conflict", { p_mollie_payment_id: payment.id });
     }
 
@@ -67,6 +69,16 @@ async function readPaymentId(req: Request) {
   }
   const form = new URLSearchParams(await req.text());
   return form.get("id") ?? "";
+}
+
+async function getMollieAccessToken(supabase: ReturnType<typeof serviceClient>) {
+  const { data, error } = await supabase
+    .from("mollie_tokens")
+    .select("access_token")
+    .eq("id", MOLLIE_TOKEN_ID)
+    .single();
+  if (error || !data?.access_token) throw error ?? new Error("Mollie OAuth token is not connected");
+  return data.access_token;
 }
 
 async function sendConfirmationIfNeeded(supabase: ReturnType<typeof serviceClient>, bookingId: string) {

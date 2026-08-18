@@ -13,21 +13,6 @@ export type MolliePayment = {
   _links?: { checkout?: { href?: string } };
 };
 
-export function mollieConfig() {
-  const mode = mollieMode();
-  const apiKey = mode === "live"
-    ? Deno.env.get("MOLLIE_LIVE_API_KEY")
-    : Deno.env.get("MOLLIE_TEST_API_KEY");
-  if (!apiKey) throw new Error(`Missing MOLLIE_${mode.toUpperCase()}_API_KEY`);
-  const apiKeyName = `MOLLIE_${mode.toUpperCase()}_API_KEY`;
-  if (apiKey === "test_PLACEHOLDER" || apiKey === "live_PLACEHOLDER") {
-    throw new Error(`${apiKeyName} is still a placeholder`);
-  }
-  const expectedPrefix = mode === "test" ? "test_" : "live_";
-  if (!apiKey.startsWith(expectedPrefix)) throw new Error(`${apiKeyName} must start with ${expectedPrefix}`);
-  return { apiKey, mode } as { apiKey: string; mode: MollieMode };
-}
-
 export function mollieMode() {
   const mode = Deno.env.get("MOLLIE_MODE") ?? "test";
   if (mode !== "test" && mode !== "live") throw new Error("MOLLIE_MODE must be test or live");
@@ -37,10 +22,11 @@ export function mollieMode() {
 export async function mollieRequest<T>(
   path: string,
   init: RequestInit = {},
+  bearerToken?: string,
   idempotencyKey?: string,
 ): Promise<T> {
-  const { apiKey } = mollieConfig();
-  return mollieBearerRequest<T>(path, apiKey, init, idempotencyKey);
+  if (!bearerToken) throw new Error("Mollie OAuth bearer token is required");
+  return mollieBearerRequest<T>(path, bearerToken, init, idempotencyKey);
 }
 
 export async function mollieBearerRequest<T>(

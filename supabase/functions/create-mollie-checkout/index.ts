@@ -1,9 +1,8 @@
 import { handleOptions, noStoreJson } from "../_shared/http.ts";
-import { decryptToken, encryptToken } from "../_shared/crypto.ts";
 import {
   centsToMollieValue,
   mollieCheckoutUrl,
-  mollieBearerRequest,
+  mollieRequest,
   mollieMode,
   type MolliePayment,
 } from "../_shared/mollie.ts";
@@ -45,8 +44,9 @@ Deno.serve(async (req) => {
     }
 
     if (data.mollie_payment_id) {
-      const existing = await mollieBearerRequest<MolliePayment>(
+      const existing = await mollieRequest<MolliePayment>(
         `/payments/${encodeURIComponent(data.mollie_payment_id)}`,
+        {},
         mollieToken.access_token,
       );
       if (existing.mode !== mode) throw new Error("Mollie payment mode mismatch");
@@ -63,28 +63,21 @@ Deno.serve(async (req) => {
     const supabaseUrl = (Deno.env.get("SUPABASE_URL") ?? "").replace(/\/$/, "");
     if (!siteUrl || !supabaseUrl) throw new Error("Missing PUBLIC_SITE_URL or SUPABASE_URL");
 
-    const payment = await mollieBearerRequest<MolliePayment>(
-      "/payments",
-      mollieToken.access_token,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          profileId: mollieToken.profile_id,
-          amount: { currency: "EUR", value: centsToMollieValue(data.amount_due_cents) },
-          description: `${data.service_name} - afspraak ${bookingId.slice(0, 8)}`,
-          redirectUrl: `${siteUrl}/boeken/succes?booking_id=${encodeURIComponent(bookingId)}`,
-          cancelUrl: `${siteUrl}/boeken/verlopen`,
-          webhookUrl: `${supabaseUrl}/functions/v1/mollie-webhook`,
-          method: "ideal",
-          applicationFee: {
-            amount: { currency: "EUR", value: "0.61" },
-            description: "Van Appiah platform fee",
-          },
-          metadata: { booking_id: bookingId, service_id: serviceId, payment_mode: mode },
-        }),
+    const paymentBody = {
+      profileId: mollieToken.profile_id,
+      amount: { currency: "EUR", value: centsToMollieValue(data.amount_due_cents) },
+      description: `${data.service_name} - afspraak ${bookingId.slice(0, 8)}`,
+      redirectUrl: `${siteUrl}/boeken/succes?booking_id=${encodeURIComponent(bookingId)}`,
+      cancelUrl: `${siteUrl}/boeken/verlopen`,
+      webhookUrl: `${supabaseUrl}/functions/v1/mollie-webhook`,
+      method: "ideal",
+      applicationFee: {
+        amount: { currency: "EUR", value: "0.61" },
+        description: "Van Appiah platform fee",
       },
-      `booking-${bookingId}`,
-    );
+      metadata: { booking_id: bookingId, service_id: serviceId, payment_mode: mode },
+    };
+    const payment = await createMolliePaymentWithRetry(supabase, mollieToken.access_token, paymentBody, bookingId);
 
     if (payment.mode !== mode) throw new Error("Mollie response mode mismatch");
     const checkoutUrl = mollieCheckoutUrl(payment);
@@ -112,51 +105,50 @@ async function getMollieToken(supabase: ReturnType<typeof serviceClient>) {
     throw error ?? new Error("Mollie OAuth token is not connected");
   }
 
-  const accessToken = await decryptToken(data.access_token);
-  const refreshToken = data.refresh_token ? await decryptToken(data.refresh_token) : null;
-  if (new Date(data.expires_at).getTime() > Date.now() + 60_000) {
-    return { access_token: accessToken, refresh_token: refreshToken, expires_at: data.expires_at, profile_id: data.profile_id };
+  if (new Date(data.expires_at).getTime() <= Date.now() + 5 * 60_000) {
+    await refreshMollieToken();
+    return await getMollieToken(supabase);
   }
 
-  const refreshed = await refreshMollieToken(refreshToken);
-  const nextToken = {
-    access_token: refreshed.access_token,
-    refresh_token: refreshed.refresh_token ?? refreshToken,
-    expires_at: new Date(Date.now() + refreshed.expires_in * 1000).toISOString(),
-    profile_id: data.profile_id,
-  };
-  const { error: updateError } = await supabase
-    .from("mollie_tokens")
-    .update({
-      access_token: await encryptToken(nextToken.access_token),
-      refresh_token: nextToken.refresh_token ? await encryptToken(nextToken.refresh_token) : null,
-      expires_at: nextToken.expires_at,
-    })
-    .eq("id", MOLLIE_TOKEN_ID);
-  if (updateError) throw updateError;
-  return nextToken;
+  return data;
 }
 
-async function refreshMollieToken(refreshTokenValue: string | null) {
-  if (!refreshTokenValue) throw new Error("Missing Mollie refresh token");
-  const response = await fetch("https://api.mollie.com/oauth2/tokens", {
+async function createMolliePaymentWithRetry(
+  supabase: ReturnType<typeof serviceClient>,
+  accessToken: string,
+  paymentBody: Record<string, unknown>,
+  bookingId: string,
+) {
+  try {
+    return await mollieRequest<MolliePayment>("/payments", {
+      method: "POST",
+      body: JSON.stringify(paymentBody),
+    }, accessToken, `booking-${bookingId}`);
+  } catch (error) {
+    if (!isMollieUnauthorized(error)) throw error;
+    await refreshMollieToken();
+    const refreshed = await getMollieToken(supabase);
+    return await mollieRequest<MolliePayment>("/payments", {
+      method: "POST",
+      body: JSON.stringify(paymentBody),
+    }, refreshed.access_token, `booking-${bookingId}`);
+  }
+}
+
+async function refreshMollieToken() {
+  const supabaseUrl = (Deno.env.get("SUPABASE_URL") ?? "").replace(/\/$/, "");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !serviceRoleKey) throw new Error("Missing Supabase configuration for Mollie token refresh");
+
+  const response = await fetch(`${supabaseUrl}/functions/v1/mollie-token-refresh`, {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
-    body: new URLSearchParams({
-      grant_type: "refresh_token",
-      client_id: requiredEnv("MOLLIE_CLIENT_ID"),
-      client_secret: requiredEnv("MOLLIE_CLIENT_SECRET"),
-      refresh_token: refreshTokenValue,
-    }),
+    headers: { Authorization: `Bearer ${serviceRoleKey}`, "Content-Type": "application/json" },
   });
-  if (!response.ok) throw new Error(`Token refresh failed ${response.status}: ${await response.text()}`);
-  return await response.json() as { access_token: string; refresh_token?: string; expires_in: number };
+  if (!response.ok) throw new Error(`Mollie token refresh function failed ${response.status}: ${await response.text()}`);
 }
 
-function requiredEnv(name: string) {
-  const value = Deno.env.get(name);
-  if (!value || value === "PLACEHOLDER") throw new Error(`Missing ${name}`);
-  return value;
+function isMollieUnauthorized(error: unknown) {
+  return error instanceof Error && error.message.includes("Mollie API returned 401");
 }
 
 async function sendBookingConfirmation(supabase: ReturnType<typeof serviceClient>, bookingId: string) {
