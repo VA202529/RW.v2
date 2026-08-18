@@ -18,7 +18,7 @@ import { hairSalonJsonLd, webPageJsonLd } from "@/seo/structured-data";
 import heroImg from "@/assets/hero-cut.jpg";
 
 const description =
-  "RW CUTZZ is een kapper en barbershop in Amsterdam-Noord. Boek online je knipbeurt, baardtrim of design bij de tijdelijke locatie aan Mariëndaal 94.";
+  "RW CUTZZ is een kapper en barbershop in Amsterdam-Noord. Boek online je knipbeurt, baardtrim of design bij de tijdelijke locatie aan Buikslotermeerplein 13.";
 
 export const Route = createFileRoute("/")({
   head: () =>
@@ -79,7 +79,7 @@ function Home() {
             </h1>
             <p className="mt-8 max-w-md text-white/70 text-lg leading-relaxed">
               {businessConfig.tagline}. Boek online je knipbeurt, baardtrim of design bij RW CUTZZ
-              aan Mariëndaal 94 in Amsterdam.
+              aan Buikslotermeerplein 13 in Amsterdam.
             </p>
             <div className="mt-10 flex flex-wrap gap-3">
               <Link
