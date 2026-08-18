@@ -29,14 +29,14 @@ export const businessConfig = {
   email: "info@rwcutzz.com",
   activeLocation: {
     label: "Tijdelijke salonlocatie",
-    streetAddress: "Buikslotermeerplein 13",
-    postalCode: "1025 ES",
+    streetAddress: "Mariëndaal 94",
+    postalCode: "1025 BW",
     locality: "Amsterdam",
     region: "Noord-Holland",
     countryName: "Nederland",
     countryCode: "NL",
     mapsUrl:
-      "https://www.google.com/maps/search/?api=1&query=Buikslotermeerplein%2013%2C%201025%20ES%20Amsterdam%2C%20Nederland",
+      "https://www.google.com/maps/search/?api=1&query=Mari%C3%ABndaal%2094%2C%201025%20BW%20Amsterdam%2C%20Nederland",
   },
   legalLocation: {
     label: "Juridisch vestigingsadres",
@@ -62,7 +62,7 @@ export const businessConfig = {
   seo: {
     defaultTitle: "RW CUTZZ | Kapper & Barbershop in Amsterdam-Noord",
     defaultDescription:
-      "RW CUTZZ is een kapper en barbershop in Amsterdam-Noord. Boek online je knipbeurt, baardtrim of design bij de tijdelijke locatie aan Buikslotermeerplein 13.",
+      "RW CUTZZ is een kapper en barbershop in Amsterdam-Noord. Boek online je knipbeurt, baardtrim of design bij de tijdelijke locatie aan Mariëndaal 94.",
     locale: "nl_NL",
   },
 } as const;

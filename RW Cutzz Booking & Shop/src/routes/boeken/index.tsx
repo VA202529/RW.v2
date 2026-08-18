@@ -217,27 +217,29 @@ function Boeken() {
           )}
         </div>
       </section>
-      <section className="px-6 pb-16">
-        <div className="max-w-5xl mx-auto border-t border-brand-text/10 pt-10">
-          <h2 className="font-display text-3xl font-extrabold tracking-tight">
-            Diensten en prijzen
-          </h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            {publicServices.map((service) => (
-              <article
-                key={service.id}
-                className="bg-brand-surface border border-brand-text/10 p-5"
-              >
-                <h3 className="font-display text-xl">{service.name}</h3>
-                <p className="mt-2 text-sm text-brand-muted">{service.description}</p>
-                <p className="mt-3 text-sm">
-                  Vanaf {euros(service.priceCents)} · aanbetaling {euros(service.depositCents)}
-                </p>
-              </article>
-            ))}
+      {state.step !== 4 && (
+        <section className="px-6 pb-16">
+          <div className="max-w-5xl mx-auto border-t border-brand-text/10 pt-10">
+            <h2 className="font-display text-3xl font-extrabold tracking-tight">
+              Diensten en prijzen
+            </h2>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              {publicServices.map((service) => (
+                <article
+                  key={service.id}
+                  className="bg-brand-surface border border-brand-text/10 p-5"
+                >
+                  <h3 className="font-display text-xl">{service.name}</h3>
+                  <p className="mt-2 text-sm text-brand-muted">{service.description}</p>
+                  <p className="mt-3 text-sm">
+                    Vanaf {euros(service.priceCents)} · aanbetaling {euros(service.depositCents)}
+                  </p>
+                </article>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
       <SiteFooter />
     </div>
   );
