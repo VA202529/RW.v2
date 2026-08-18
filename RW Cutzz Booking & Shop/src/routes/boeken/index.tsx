@@ -16,9 +16,9 @@ import {
   createCheckout,
   dutchError,
 } from "@/lib/api/client";
-import { euros, depositCents, dutchDate } from "@/lib/format";
+import { euros, serviceDepositCents, dutchDate } from "@/lib/format";
 import type { Guest } from "@/lib/api/types";
-import { businessConfig, formatActiveAddress, publicServices } from "@/config/business";
+import { businessConfig, formatActiveAddress } from "@/config/business";
 import { jsonLdScript, routeHead } from "@/seo/metadata";
 import { webPageJsonLd } from "@/seo/structured-data";
 
@@ -170,11 +170,7 @@ function Boeken() {
                     guest: g,
                     turnstile_token: t,
                   });
-                  const dep = depositCents(
-                    selectedService.price_cents,
-                    selectedService.deposit_type,
-                    selectedService.deposit_value,
-                  );
+                  const dep = serviceDepositCents(selectedService);
                   dispatch({ type: "set_guest", g, t });
                   dispatch({
                     type: "hold",
@@ -217,29 +213,6 @@ function Boeken() {
           )}
         </div>
       </section>
-      {state.step !== 4 && (
-        <section className="px-6 pb-16">
-          <div className="max-w-5xl mx-auto border-t border-brand-text/10 pt-10">
-            <h2 className="font-display text-3xl font-extrabold tracking-tight">
-              Diensten en prijzen
-            </h2>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              {publicServices.map((service) => (
-                <article
-                  key={service.id}
-                  className="bg-brand-surface border border-brand-text/10 p-5"
-                >
-                  <h3 className="font-display text-xl">{service.name}</h3>
-                  <p className="mt-2 text-sm text-brand-muted">{service.description}</p>
-                  <p className="mt-3 text-sm">
-                    Vanaf {euros(service.priceCents)} · aanbetaling {euros(service.depositCents)}
-                  </p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
       <SiteFooter />
     </div>
   );
@@ -258,7 +231,7 @@ function Step1({
     <div className="grid gap-4">
       {services.map((s) => {
         const active = s.id === value;
-        const dep = depositCents(s.price_cents, s.deposit_type, s.deposit_value);
+        const dep = serviceDepositCents(s);
         return (
           <button
             key={s.id}

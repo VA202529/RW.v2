@@ -49,7 +49,11 @@ export async function getServices(): Promise<Service[]> {
     return mockServices;
   }
   if (!supabase) throw new ApiError("Geen backend geconfigureerd.", { code: "NO_BACKEND" });
-  const { data, error } = await supabase.from("services").select("*").eq("is_active", true);
+  const { data, error } = await supabase
+    .from("services")
+    .select("*")
+    .eq("is_active", true)
+    .order("price_cents");
   if (error) throw new ApiError("Kon diensten niet laden.", { code: error.code });
   return (data ?? []) as Service[];
 }

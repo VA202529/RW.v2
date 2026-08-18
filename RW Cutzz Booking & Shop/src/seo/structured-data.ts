@@ -1,12 +1,9 @@
 import {
   businessConfig,
-  centsToPrice,
   formatActiveAddress,
-  publicServices,
-  type PublicService,
 } from "@/config/business";
 import { canonicalUrl } from "@/seo/metadata";
-import type { Product } from "@/lib/api/types";
+import type { Product, Service } from "@/lib/api/types";
 
 export function websiteJsonLd() {
   return {
@@ -41,30 +38,17 @@ export function hairSalonJsonLd() {
       addressCountry: activeLocation.countryCode,
     },
     areaServed: "Amsterdam-Noord",
-    priceRange: "EUR 20-45",
-    openingHoursSpecification: businessConfig.openingHours
-      .filter((entry) => !entry.closed)
-      .map((entry) => ({
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: entry.schemaDay,
-        opens: entry.opens,
-        closes: entry.closes,
-      })),
+    openingHours: businessConfig.openingHours,
     sameAs: [businessConfig.socials.instagram, businessConfig.socials.tiktok],
-    hasOfferCatalog: {
-      "@type": "OfferCatalog",
-      name: "Barberdiensten",
-      itemListElement: publicServices.map((service) => serviceOfferJsonLd(service)),
-    },
   };
 }
 
-export function serviceOfferJsonLd(service: PublicService) {
+export function serviceOfferJsonLd(service: Service) {
   return {
     "@type": "Offer",
     name: service.name,
     description: service.description,
-    price: (service.priceCents / 100).toFixed(2),
+    price: (service.price_cents / 100).toFixed(2),
     priceCurrency: "EUR",
     url: canonicalUrl(`/boeken?service=${service.id}`),
   };
@@ -111,6 +95,4 @@ export function productJsonLd(product: Product) {
 }
 
 export const activeAddressText = formatActiveAddress();
-export const servicePriceSummary = publicServices
-  .map((service) => `${service.name} ${centsToPrice(service.priceCents)}`)
-  .join(", ");
+export const servicePriceSummary = "";

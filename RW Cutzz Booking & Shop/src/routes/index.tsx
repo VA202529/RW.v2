@@ -6,19 +6,18 @@ import { StarRating } from "@/components/StarRating";
 import { RelativeDate } from "@/components/RelativeDate";
 import { EmptyState } from "@/components/EmptyState";
 import { getServices, getPublicReviews } from "@/lib/api/client";
-import { euros, depositCents } from "@/lib/format";
+import { euros, serviceDepositCents } from "@/lib/format";
 import {
   businessConfig,
   formatActiveAddress,
   formatOpeningHours,
-  publicServices,
 } from "@/config/business";
 import { jsonLdScript, routeHead } from "@/seo/metadata";
 import { hairSalonJsonLd, webPageJsonLd } from "@/seo/structured-data";
 import heroImg from "@/assets/hero-cut.jpg";
 
 const description =
-  "RW CUTZZ is een kapper en barbershop in Amsterdam-Noord. Boek online je knipbeurt, baardtrim of design bij de tijdelijke locatie aan Buikslotermeerplein 13.";
+  `RW CUTZZ is een kapper en barbershop in Amsterdam-Noord. Boek online je afspraak bij de tijdelijke locatie aan ${businessConfig.activeLocation.streetAddress}.`;
 
 export const Route = createFileRoute("/")({
   head: () =>
@@ -36,19 +35,6 @@ export const Route = createFileRoute("/")({
 function Home() {
   const { data: services = [] } = useQuery({ queryKey: ["services"], queryFn: getServices });
   const { data: reviews = [] } = useQuery({ queryKey: ["reviews"], queryFn: getPublicReviews });
-  const serviceCards =
-    services.length > 0
-      ? services
-      : publicServices.map((service) => ({
-          id: service.id,
-          name: service.name,
-          description: service.description,
-          price_cents: service.priceCents,
-          duration_minutes: service.durationMinutes,
-          buffer_minutes: 0,
-          deposit_type: "fixed" as const,
-          deposit_value: service.depositCents,
-        }));
 
   return (
     <div className="min-h-screen bg-brand-bg text-brand-text flex flex-col">
@@ -79,7 +65,7 @@ function Home() {
             </h1>
             <p className="mt-8 max-w-md text-white/70 text-lg leading-relaxed">
               {businessConfig.tagline}. Boek online je knipbeurt, baardtrim of design bij RW CUTZZ
-              aan Buikslotermeerplein 13 in Amsterdam.
+              aan {businessConfig.activeLocation.streetAddress} in Amsterdam.
             </p>
             <div className="mt-10 flex flex-wrap gap-3">
               <Link
@@ -121,8 +107,8 @@ function Home() {
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {serviceCards.map((s) => {
-              const dep = depositCents(s.price_cents, s.deposit_type, s.deposit_value);
+            {services.map((s) => {
+              const dep = serviceDepositCents(s);
               return (
                 <article
                   key={s.id}

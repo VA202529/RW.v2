@@ -5,8 +5,7 @@ export type Service = {
   price_cents: number;
   duration_minutes: number;
   buffer_minutes: number;
-  deposit_type: "fixed" | "percentage";
-  deposit_value: number;
+  deposit_amount: number | null;
 };
 
 export type Product = {

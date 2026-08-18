@@ -1,5 +1,6 @@
 import { format, formatDistanceToNow, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
+import type { Service } from "@/lib/api/types";
 
 export function euros(cents: number): string {
   return new Intl.NumberFormat("nl-NL", {
@@ -20,7 +21,6 @@ export function dutchRelative(iso: string): string {
   return formatDistanceToNow(parseISO(iso), { locale: nl, addSuffix: true });
 }
 
-export function depositCents(price_cents: number, type: "fixed" | "percentage", value: number): number {
-  if (type === "fixed") return value;
-  return Math.round((price_cents * value) / 100);
+export function serviceDepositCents(service: Service): number {
+  return typeof service.deposit_amount === "number" ? service.deposit_amount : 0;
 }

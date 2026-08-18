@@ -5,48 +5,7 @@ import type {
   AccountData,
 } from "./types";
 
-export const mockServices: Service[] = [
-  {
-    id: "fade",
-    name: "Classic Fade",
-    description: "Strakke fade met scherpe lijnen en styling naar wens.",
-    price_cents: 3000,
-    duration_minutes: 30,
-    buffer_minutes: 5,
-    deposit_type: "fixed",
-    deposit_value: 1000,
-  },
-  {
-    id: "beard",
-    name: "Baard Trim",
-    description: "Baard sculpten met hete handdoek en verzorgende olie.",
-    price_cents: 2000,
-    duration_minutes: 20,
-    buffer_minutes: 5,
-    deposit_type: "fixed",
-    deposit_value: 500,
-  },
-  {
-    id: "combo",
-    name: "The RW Combo",
-    description: "Knippen, baard en styling. De complete behandeling.",
-    price_cents: 4500,
-    duration_minutes: 60,
-    buffer_minutes: 10,
-    deposit_type: "percentage",
-    deposit_value: 30,
-  },
-  {
-    id: "kids",
-    name: "Kids Cut",
-    description: "Voor jongens t/m 12 jaar. Snel en netjes.",
-    price_cents: 2000,
-    duration_minutes: 20,
-    buffer_minutes: 5,
-    deposit_type: "fixed",
-    deposit_value: 500,
-  },
-];
+export const mockServices: Service[] = [];
 
 export const mockProducts: Product[] = [
   {

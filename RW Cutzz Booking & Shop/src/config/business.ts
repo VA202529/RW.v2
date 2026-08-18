@@ -1,19 +1,6 @@
-export type OpeningHoursEntry = {
-  day: string;
-  schemaDay: string;
-  opens?: string;
-  closes?: string;
-  closed?: boolean;
-};
+const env = import.meta.env;
 
-export type PublicService = {
-  id: string;
-  name: string;
-  description: string;
-  priceCents: number;
-  depositCents: number;
-  durationMinutes: number;
-};
+const activeAddress = parseAddress(env.VITE_ADDRESS as string | undefined);
 
 export const businessConfig = {
   businessName: "RW CUTZZ",
@@ -29,86 +16,33 @@ export const businessConfig = {
   email: "info@rwcutzz.com",
   activeLocation: {
     label: "Tijdelijke salonlocatie",
-    streetAddress: "Buikslotermeerplein 13",
-    postalCode: "1025 ES",
-    locality: "Amsterdam",
+    streetAddress: activeAddress.streetAddress,
+    postalCode: activeAddress.postalCode,
+    locality: activeAddress.locality,
     region: "Noord-Holland",
     countryName: "Nederland",
     countryCode: "NL",
-    mapsUrl:
-      "https://www.google.com/maps/search/?api=1&query=Buikslotermeerplein%2013%2C%201025%20ES%20Amsterdam%2C%20Nederland",
+    mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activeAddress.fullAddress + ", Nederland")}`,
   },
   legalLocation: {
     label: "Juridisch vestigingsadres",
-    streetAddress: "Mariëndaal 94",
-    postalCode: "1025 BW",
-    locality: "Amsterdam",
+    streetAddress: activeAddress.streetAddress,
+    postalCode: activeAddress.postalCode,
+    locality: activeAddress.locality,
     countryName: "Nederland",
   },
   socials: {
-    instagram: "https://www.instagram.com/rwcutzzz",
-    tiktok: "https://www.tiktok.com/@chanoroch",
-    snapchat: "https://www.snapchat.com/add/roch.nwd",
+    instagram: (env.VITE_INSTAGRAM_URL as string | undefined) ?? "",
+    tiktok: (env.VITE_TIKTOK_URL as string | undefined) ?? "",
+    snapchat: (env.VITE_SNAPCHAT_URL as string | undefined) ?? "",
   },
-  openingHours: [
-    { day: "Maandag", schemaDay: "Monday", closed: true },
-    { day: "Dinsdag", schemaDay: "Tuesday", opens: "10:00", closes: "15:00" },
-    { day: "Woensdag", schemaDay: "Wednesday", opens: "10:00", closes: "17:00" },
-    { day: "Donderdag", schemaDay: "Thursday", opens: "10:00", closes: "15:00" },
-    { day: "Vrijdag", schemaDay: "Friday", opens: "10:00", closes: "17:00" },
-    { day: "Zaterdag", schemaDay: "Saturday", opens: "12:00", closes: "17:00" },
-    { day: "Zondag", schemaDay: "Sunday", closed: true },
-  ] satisfies OpeningHoursEntry[],
+  openingHours: (env.VITE_OPENING_HOURS as string | undefined) ?? "",
   seo: {
     defaultTitle: "RW CUTZZ | Kapper & Barbershop in Amsterdam-Noord",
-    defaultDescription:
-      "RW CUTZZ is een kapper en barbershop in Amsterdam-Noord. Boek online je knipbeurt, baardtrim of design bij de tijdelijke locatie aan Buikslotermeerplein 13.",
+    defaultDescription: `RW CUTZZ is een kapper en barbershop in Amsterdam-Noord. Boek online je afspraak bij de tijdelijke locatie aan ${activeAddress.streetAddress}.`,
     locale: "nl_NL",
   },
 } as const;
-
-export const publicServices: PublicService[] = [
-  {
-    id: "knippen",
-    name: "Knippen",
-    description: "Strakke knipbeurt met persoonlijke afwerking.",
-    priceCents: 3000,
-    depositCents: 900,
-    durationMinutes: 30,
-  },
-  {
-    id: "knippen-baard",
-    name: "Knippen + Baard",
-    description: "Complete fresh-up voor haar en baard.",
-    priceCents: 4500,
-    depositCents: 1350,
-    durationMinutes: 45,
-  },
-  {
-    id: "baard-trimmen",
-    name: "Baard trimmen",
-    description: "Baardtrim met nette lijnen en verzorgde finish.",
-    priceCents: 2000,
-    depositCents: 600,
-    durationMinutes: 20,
-  },
-  {
-    id: "kids-knippen",
-    name: "Kids knippen t/m 12 jaar",
-    description: "Knipbeurt voor kinderen tot en met 12 jaar.",
-    priceCents: 2250,
-    depositCents: 675,
-    durationMinutes: 30,
-  },
-  {
-    id: "design-lines",
-    name: "Design / Lines",
-    description: "Creatieve lijnen of design als strakke finishing touch.",
-    priceCents: 3500,
-    depositCents: 1050,
-    durationMinutes: 30,
-  },
-];
 
 export function centsToPrice(cents: number) {
   return new Intl.NumberFormat("nl-NL", {
@@ -136,9 +70,20 @@ export function formatLegalAddress(separator = ", ") {
 }
 
 export function formatOpeningHours(separator = "\n") {
-  return businessConfig.openingHours
-    .map((entry) =>
-      entry.closed ? `${entry.day}: gesloten` : `${entry.day}: ${entry.opens}-${entry.closes}`,
-    )
-    .join(separator);
+  return businessConfig.openingHours.replaceAll(" | ", separator);
+}
+
+function parseAddress(value: string | undefined) {
+  const fullAddress = value ?? "";
+  const parts = fullAddress.split(",").map((part) => part.trim()).filter(Boolean);
+  const streetAddress = parts[0] ?? "";
+  const postalAndLocality = parts[1] ?? "";
+  const match = postalAndLocality.match(/^(\d{4}\s?[A-Z]{2})\s+(.+)$/i);
+
+  return {
+    fullAddress,
+    streetAddress,
+    postalCode: match?.[1] ?? "",
+    locality: match?.[2] ?? postalAndLocality,
+  };
 }
