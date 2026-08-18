@@ -1,3 +1,6 @@
+[functions.mollie-webhook]
+verify_jwt = false
+
 [functions.mollie-oauth-callback]
 verify_jwt = false
 
