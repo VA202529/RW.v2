@@ -59,13 +59,24 @@ Deno.serve(async (req) => {
       }
     }
 
-    const siteUrl = (Deno.env.get("PUBLIC_SITE_URL") ?? req.headers.get("origin") ?? "").replace(/\/$/, "");
+    const { data: serviceAmount, error: serviceAmountError } = await supabase
+      .from("services")
+      .select("deposit_amount")
+      .eq("id", serviceId)
+      .eq("is_active", true)
+      .single();
+    if (serviceAmountError || !Number.isInteger(serviceAmount?.deposit_amount) || serviceAmount.deposit_amount <= 0) {
+      throw serviceAmountError ?? new Error("Invalid service deposit amount");
+    }
+
+    const depositAmountCents = serviceAmount.deposit_amount;
+    const siteUrl = "https://rw-v2-website.vercel.app";
     const supabaseUrl = (Deno.env.get("SUPABASE_URL") ?? "").replace(/\/$/, "");
-    if (!siteUrl || !supabaseUrl) throw new Error("Missing PUBLIC_SITE_URL or SUPABASE_URL");
+    if (!supabaseUrl) throw new Error("Missing SUPABASE_URL");
 
     const paymentBody = {
       profileId: mollieToken.profile_id,
-      amount: { currency: "EUR", value: centsToMollieValue(data.amount_due_cents) },
+      amount: { currency: "EUR", value: centsToMollieValue(depositAmountCents) },
       description: `${data.service_name} - afspraak ${bookingId.slice(0, 8)}`,
       redirectUrl: `${siteUrl}/boeken/succes?booking_id=${encodeURIComponent(bookingId)}`,
       cancelUrl: `${siteUrl}/boeken/verlopen`,
