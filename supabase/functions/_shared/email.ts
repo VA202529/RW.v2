@@ -14,6 +14,7 @@ import { order_ready } from "./emails/order_ready.tsx";
 import { announcement } from "./emails/announcement.tsx";
 import { platform_invoice } from "./emails/platform_invoice.tsx";
 import { order_cancelled } from "./emails/order_cancelled.tsx";
+import { monthly_invoice } from "./emails/monthly_invoice.tsx";
 
 const templates: Record<string, (data: Record<string, any>) => any> = {
   booking_confirmation,
@@ -29,6 +30,7 @@ const templates: Record<string, (data: Record<string, any>) => any> = {
   announcement,
   platform_invoice,
   order_cancelled,
+  monthly_invoice,
 };
 
 export async function sendTransactionalEmail(input: {

@@ -962,11 +962,15 @@ textarea,
 
 html {
   color-scheme: dark;
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
   background: var(--admin-bg);
   color: var(--admin-text);
+  height: 100%;
+  overflow: hidden;
 }
 
 body,
@@ -975,6 +979,11 @@ select,
 textarea,
 button {
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+#root {
+  height: 100%;
+  overflow: hidden;
 }
 
 p,

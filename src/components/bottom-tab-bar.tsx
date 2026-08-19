@@ -1,5 +1,17 @@
-import { useState } from "react";
-import { Calendar, ClipboardList, Users, ShoppingBag, MoreHorizontal, Scissors, Megaphone, Star, Clock, BarChart3, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Calendar,
+  ClipboardList,
+  Users,
+  ShoppingBag,
+  MoreHorizontal,
+  Scissors,
+  Megaphone,
+  Star,
+  Clock,
+  BarChart3,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TABS = [
@@ -17,10 +29,23 @@ const MORE_ITEMS = [
   { to: "/admin/statistieken", label: "Statistieken", icon: BarChart3, desc: "Cijfers en trends" },
 ];
 
-export function BottomTabBar() {
-  const pathname = window.location.pathname;
+type BottomTabBarProps = {
+  path: string;
+  onNavigate: (to: string) => void;
+};
+
+export function BottomTabBar({ path, onNavigate }: BottomTabBarProps) {
   const [moreOpen, setMoreOpen] = useState(false);
-  const moreActive = MORE_ITEMS.some((i) => pathname.startsWith(i.to));
+  const moreActive = MORE_ITEMS.some((item) => path.startsWith(item.to));
+
+  useEffect(() => {
+    setMoreOpen(false);
+  }, [path]);
+
+  function navigateAndClose(to: string) {
+    setMoreOpen(false);
+    onNavigate(to);
+  }
 
   return (
     <>
@@ -29,25 +54,27 @@ export function BottomTabBar() {
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="flex items-stretch">
-          {TABS.map((t) => {
-            const active = pathname === t.to || pathname.startsWith(t.to + "/");
-            const Icon = t.icon;
+          {TABS.map((tab) => {
+            const active = path === tab.to || path.startsWith(tab.to + "/");
+            const Icon = tab.icon;
             return (
-              <a
-                key={t.to}
-                href={t.to}
+              <button
+                key={tab.to}
+                type="button"
+                onClick={() => navigateAndClose(tab.to)}
                 className={cn(
                   "flex-1 flex flex-col items-center justify-center gap-1 pt-2 pb-2 min-h-[56px] press relative",
                   active ? "text-primary" : "text-muted-foreground",
                 )}
               >
                 <Icon className={cn("h-5 w-5", active && "fill-primary/20")} strokeWidth={active ? 2.5 : 2} />
-                <span className="text-[10px] font-medium">{t.label}</span>
+                <span className="text-[10px] font-medium">{tab.label}</span>
                 {active && <span className="absolute top-0 h-0.5 w-8 rounded-b-full bg-primary" />}
-              </a>
+              </button>
             );
           })}
           <button
+            type="button"
             onClick={() => setMoreOpen(true)}
             className={cn(
               "flex-1 flex flex-col items-center justify-center gap-1 pt-2 pb-2 min-h-[56px] press",
@@ -61,44 +88,49 @@ export function BottomTabBar() {
       </nav>
 
       {moreOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-background animate-page-in flex flex-col" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-          <div className="flex items-center justify-between px-4 h-14 border-b border-border">
-            <h2 className="text-base font-semibold">Meer</h2>
-            <button
-              onClick={() => setMoreOpen(false)}
-              className="h-10 w-10 grid place-items-center rounded-full press hover:bg-accent"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
-            {MORE_ITEMS.map((item) => {
-              const Icon = item.icon;
-              return (
-                <a
-                  key={item.to}
-                  href={item.to}
-                  onClick={() => setMoreOpen(false)}
-                  className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 press"
-                >
-                  <div className="h-11 w-11 rounded-xl bg-primary/15 grid place-items-center">
-                    <Icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold">{item.label}</div>
-                    <div className="text-xs text-muted-foreground truncate">{item.desc}</div>
-                  </div>
-                </a>
-              );
-            })}
-            <div className="pt-6 flex items-center gap-3 px-2">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary/40 grid place-items-center text-xs font-bold">RW</div>
-              <div className="text-xs">
-                <div className="font-medium">Reggie W.</div>
-                <div className="text-muted-foreground">owner@rwcutzz.nl</div>
-              </div>
+        <div className="md:hidden fixed inset-0 z-50">
+          <button
+            type="button"
+            aria-label="Sluit menu"
+            className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
+            onClick={() => setMoreOpen(false)}
+          />
+          <section
+            className="absolute inset-x-0 bottom-0 max-h-[80dvh] rounded-t-3xl border border-border bg-background shadow-2xl animate-page-in flex flex-col"
+            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+          >
+            <div className="flex items-center justify-between px-4 h-14 border-b border-border">
+              <h2 className="text-base font-semibold">Meer</h2>
+              <button
+                type="button"
+                onClick={() => setMoreOpen(false)}
+                className="h-10 w-10 grid place-items-center rounded-full press hover:bg-accent"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
-          </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              {MORE_ITEMS.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.to}
+                    type="button"
+                    onClick={() => navigateAndClose(item.to)}
+                    className="w-full text-left flex items-center gap-4 rounded-2xl border border-border bg-card p-4 press"
+                  >
+                    <div className="h-11 w-11 rounded-xl bg-primary/15 grid place-items-center">
+                      <Icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold">{item.label}</div>
+                      <div className="text-xs text-muted-foreground truncate">{item.desc}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
         </div>
       )}
     </>
