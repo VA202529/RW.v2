@@ -7,13 +7,13 @@ export function SiteFooter() {
   const openingHours = formatOpeningHours();
 
   return (
-    <footer className="mt-auto bg-brand-dark text-white/80">
-      <div className="max-w-7xl mx-auto px-6 py-16 grid gap-12 md:grid-cols-4">
+    <footer className="mt-16 md:mt-24 bg-brand-dark text-white/80">
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 py-12 md:py-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <p className="font-display text-2xl font-extrabold tracking-tighter text-white">
             RW <span className="text-brand-accent">CUTZZ</span>
           </p>
-          <p className="text-xs mt-2 tracking-widest uppercase text-white/60">
+          <p className="text-[11px] mt-2 tracking-widest uppercase text-white/60">
             {businessConfig.tagline}
           </p>
           <p className="mt-4 text-sm text-white/70">Kapper en barbershop in Amsterdam-Noord.</p>
@@ -52,7 +52,7 @@ export function SiteFooter() {
                 href={businessConfig.socials.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="min-h-11 min-w-11 border border-white/20 flex items-center justify-center hover:bg-brand-accent hover:border-brand-accent transition"
+                className="min-h-11 min-w-11 border border-white/20 flex items-center justify-center hover:bg-brand-accent hover:border-brand-accent transition rounded"
                 aria-label="Instagram"
               >
                 <Instagram className="w-4 h-4" />
@@ -63,7 +63,7 @@ export function SiteFooter() {
                 href={businessConfig.socials.tiktok}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="min-h-11 min-w-11 border border-white/20 flex items-center justify-center hover:bg-brand-accent hover:border-brand-accent transition text-xs font-bold"
+                className="min-h-11 min-w-11 border border-white/20 flex items-center justify-center hover:bg-brand-accent hover:border-brand-accent transition text-xs font-bold rounded"
                 aria-label="TikTok"
               >
                 TikTok
@@ -74,7 +74,7 @@ export function SiteFooter() {
                 href={businessConfig.socials.snapchat}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="min-h-11 min-w-11 border border-white/20 flex items-center justify-center hover:bg-brand-accent hover:border-brand-accent transition text-xs font-bold"
+                className="min-h-11 min-w-11 border border-white/20 flex items-center justify-center hover:bg-brand-accent hover:border-brand-accent transition text-xs font-bold rounded"
                 aria-label="Snapchat"
               >
                 Snap
@@ -84,8 +84,8 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/50">
-          <div className="flex gap-6">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4 text-xs text-white/50">
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 md:justify-start">
             <Link to="/diensten" className="hover:text-white">
               Diensten
             </Link>
@@ -102,17 +102,20 @@ export function SiteFooter() {
               Cookies
             </Link>
           </div>
-          <p>
-            © {new Date().getFullYear()} RW CUTZZ · Website door{" "}
-            <a
-              href="https://vanappiah.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-brand-accent hover:underline"
-            >
-              Van Appiah
-            </a>
-          </p>
+          <div className="flex flex-col items-center gap-1 md:items-end">
+            <p>© {new Date().getFullYear()} RW CUTZZ</p>
+            <p className="text-white/60">
+              Website door{" "}
+              <a
+                href="https://geheeldigitaal.nl/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-brand-accent font-semibold hover:underline"
+              >
+                Geheel Digitaal
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </footer>
