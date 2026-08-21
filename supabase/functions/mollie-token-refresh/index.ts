@@ -6,6 +6,10 @@ const TOKEN_URL = "https://api.mollie.com/oauth2/tokens";
 
 Deno.serve(async () => {
   try {
+    console.log("client_id set:", !!Deno.env.get("MOLLIE_CLIENT_ID"));
+    console.log("client_secret set:", !!Deno.env.get("MOLLIE_CLIENT_SECRET"));
+    console.log("client_id value starts with:", Deno.env.get("MOLLIE_CLIENT_ID")?.slice(0, 10));
+
     const supabase = serviceClient();
     const { data, error } = await supabase
       .from("mollie_tokens")
@@ -35,15 +39,19 @@ Deno.serve(async () => {
 });
 
 async function refreshToken(refreshTokenValue: string) {
+  const body = new URLSearchParams({
+    grant_type: "refresh_token",
+    refresh_token: refreshTokenValue,
+  });
+  const credentials = btoa(`${requiredEnv("MOLLIE_CLIENT_ID")}:${requiredEnv("MOLLIE_CLIENT_SECRET")}`);
   const response = await fetch(TOKEN_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
-    body: new URLSearchParams({
-      grant_type: "refresh_token",
-      client_id: requiredEnv("MOLLIE_CLIENT_ID"),
-      client_secret: requiredEnv("MOLLIE_CLIENT_SECRET"),
-      refresh_token: refreshTokenValue,
-    }),
+    headers: {
+      Authorization: `Basic ${credentials}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json",
+    },
+    body,
   });
   if (!response.ok) throw new Error(`Token refresh failed ${response.status}: ${await response.text()}`);
   return await response.json() as { access_token: string; refresh_token?: string; expires_in: number };
