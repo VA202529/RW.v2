@@ -11,17 +11,26 @@ Deno.serve(async (req) => {
     const url = new URL(req.url);
     const code = url.searchParams.get("code");
     const state = url.searchParams.get("state");
-    if (!code || !state) return successHtml("Mollie koppeling mist code of state.", 400);
+    if (!code || !state) return invalidRequest();
 
     const supabase = serviceClient();
+    const stateHash = await hashState(state);
     const { data: pendingState, error: stateError } = await supabase
-      .from("mollie_tokens")
-      .select("access_token")
-      .eq("id", "pending-state")
+      .from("oauth_pending_states")
+      .select("id, expires_at, consumed_at")
+      .eq("state_hash", stateHash)
       .single();
-    if (stateError || pendingState?.access_token !== state) {
-      return successHtml("Ongeldige Mollie state token.", 400);
-    }
+    if (stateError || !pendingState) return invalidRequest();
+    if (new Date(pendingState.expires_at).getTime() <= Date.now() || pendingState.consumed_at) return invalidRequest();
+
+    const { data: consumedRows, error: consumeError } = await supabase
+      .from("oauth_pending_states")
+      .update({ consumed_at: new Date().toISOString() })
+      .eq("id", pendingState.id)
+      .is("consumed_at", null)
+      .select("id");
+    if (consumeError) throw consumeError;
+    if (!consumedRows || consumedRows.length !== 1) return invalidRequest();
 
     const tokenResponse = await exchangeCode(code);
     const [organization, profile] = await Promise.all([
@@ -29,7 +38,7 @@ Deno.serve(async (req) => {
       mollieGet<{ id: string }>("/profiles/me", tokenResponse.access_token),
     ]);
 
-    const expiresAt = new Date(Date.now() + tokenResponse.expires_in * 1000).toISOString();
+    const expiresAt = Date.now() + Number(tokenResponse.expires_in) * 1000;
     const { error } = await supabase.from("mollie_tokens").upsert({
       id: TOKEN_ID,
       access_token: await encryptToken(tokenResponse.access_token),
@@ -80,6 +89,15 @@ function requiredEnv(name: string) {
   const value = Deno.env.get(name);
   if (!value || value === "PLACEHOLDER") throw new Error(`Missing ${name}`);
   return value;
+}
+
+async function hashState(state: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(state));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function invalidRequest() {
+  return noStoreJson({ error: "invalid_request" }, 400);
 }
 
 function successHtml(message: string, status = 200) {
