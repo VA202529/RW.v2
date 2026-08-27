@@ -77,6 +77,11 @@ export async function getSlots(args: {
   return data.slots.map((slot) => (typeof slot === "string" ? slot : slot.starts_at));
 }
 
+export async function getBookingStatus(): Promise<{ booking_open: boolean }> {
+  if (!HAS_BACKEND) return { booking_open: true };
+  return edgeFunction<{ booking_open: boolean }>("admin-system-settings", { action: "get" });
+}
+
 export async function createBookingHold(args: {
   service_id: string;
   starts_at: string;

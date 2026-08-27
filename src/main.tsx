@@ -463,6 +463,7 @@ function AdminFrame({
       <FullSidebar path={path} onNavigate={onNavigate} onLogout={onLogout} />
       <SideRail path={path} onNavigate={onNavigate} />
       <main className="flex-1 min-w-0 flex flex-col h-[100dvh] overflow-hidden">
+        <BookingToggle />
         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pb-[calc(82px+env(safe-area-inset-bottom))] md:pb-0">
           <div className="min-h-full animate-page-in">{children}</div>
         </div>
@@ -470,6 +471,27 @@ function AdminFrame({
       <BottomTabBar path={path} onNavigate={onNavigate} />
     </div>
   );
+}
+
+function BookingToggle() {
+  const [open, setOpen] = React.useState(true);
+  const [busy, setBusy] = React.useState(false);
+  const [loaded, setLoaded] = React.useState(false);
+  React.useEffect(() => {
+    supabase.functions.invoke("admin-system-settings", { body: { action: "get" } }).then(({ data }) => {
+      if (typeof data?.booking_open === "boolean") setOpen(data.booking_open);
+      setLoaded(true);
+    });
+  }, []);
+  async function toggle() {
+    setBusy(true);
+    const next = !open;
+    const { error } = await supabase.functions.invoke("admin-system-settings", { body: { action: "set_booking_open", booking_open: next } });
+    if (!error) setOpen(next);
+    setBusy(false);
+  }
+  if (!loaded) return null;
+  return <div className="sticky top-0 z-30 flex items-center justify-end border-b border-border bg-card/95 px-4 py-2 backdrop-blur lg:px-8"><button type="button" className={open ? "secondary" : "primary"} onClick={() => void toggle()} disabled={busy}>{busy ? "Bezig..." : open ? "Boeken sluiten" : "Boeken openen"}</button></div>;
 }
 
 function PagePanel({

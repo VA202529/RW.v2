@@ -12,6 +12,7 @@ import { EmptyState } from "@/components/EmptyState";
 import {
   getServices,
   getSlots,
+  getBookingStatus,
   createBookingHold,
   createCheckout,
   dutchError,
@@ -90,6 +91,7 @@ function Boeken() {
   const search = Route.useSearch();
   const nav = useNavigate();
   const { data: services = [] } = useQuery({ queryKey: ["services"], queryFn: getServices });
+  const { data: bookingStatus, isLoading: bookingStatusLoading } = useQuery({ queryKey: ["booking-status"], queryFn: getBookingStatus });
 
   const [state, dispatch] = useReducer(reducer, {
     step: 1,
@@ -98,6 +100,10 @@ function Boeken() {
   });
 
   const selectedService = services.find((s) => s.id === state.service_id);
+
+  if (!bookingStatusLoading && bookingStatus?.booking_open === false) {
+    return <div className="min-h-screen bg-brand-bg text-brand-text flex flex-col"><SiteHeader /><main className="flex-1 px-5 pb-24 pt-32 sm:px-6 md:px-8"><div className="mx-auto max-w-2xl rounded-lg border border-brand-text/10 bg-brand-surface p-6 sm:p-8"><p className="mb-3 text-xs font-bold uppercase tracking-[0.25em] text-brand-accent">Boeken</p><h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">Boeken is tijdelijk gesloten</h1><p className="mt-4 leading-relaxed text-brand-muted">Online afspraken kunnen op dit moment niet worden ingepland. Probeer het later opnieuw.</p></div></main><SiteFooter /></div>;
+  }
 
   return (
     <div className="min-h-screen bg-brand-bg text-brand-text flex flex-col">

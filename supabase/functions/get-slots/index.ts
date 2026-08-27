@@ -40,24 +40,27 @@ Deno.serve(async (req) => {
     const { service_id: serviceId, from, to } = await req.json();
 
     if (!serviceId || !from || !to) {
-      return noStoreJson({ code: "MISSING_PARAMS" }, 400);
+      return noStoreJson({ code: "MISSING_PARAMS" }, 400, req);
     }
 
     const fromDate = new Date(`${from}T00:00:00.000Z`);
     const toDate = new Date(`${to}T00:00:00.000Z`);
     const maxTo = new Date(fromDate.getTime() + 31 * 24 * 60 * 60 * 1000);
     if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime()) || toDate > maxTo) {
-      return noStoreJson({ code: "INVALID_RANGE" }, 400);
+      return noStoreJson({ code: "INVALID_RANGE" }, 400, req);
     }
 
     const supabase = serviceClient();
+    const { data: bookingOpen, error: bookingOpenError } = await supabase.rpc("get_booking_open");
+    if (bookingOpenError) throw bookingOpenError;
+    if (bookingOpen === false) return noStoreJson({ slots: [], code: "BOOKING_CLOSED" }, 200, req);
     const { data: service, error: serviceError } = await supabase
       .from("services")
       .select("id,duration_minutes,buffer_minutes")
       .eq("id", serviceId)
       .eq("is_active", true)
       .single();
-    if (serviceError || !service) return noStoreJson({ code: "SERVICE_NOT_FOUND" }, 404);
+    if (serviceError || !service) return noStoreJson({ code: "SERVICE_NOT_FOUND" }, 404, req);
 
     const { data: rules, error: rulesError } = await supabase
       .from("availability_rules")
@@ -129,9 +132,9 @@ Deno.serve(async (req) => {
       if (!busy) results.push({ starts_at: start.toISOString(), local_date: local.date, local_time: local.time });
     }
 
-    return noStoreJson({ slots: results });
+    return noStoreJson({ slots: results }, 200, req);
   } catch (error) {
     console.error(error);
-    return noStoreJson({ code: "SERVER_ERROR" }, 500);
+    return noStoreJson({ code: "SERVER_ERROR" }, 500, req);
   }
 });
