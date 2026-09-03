@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
   if (options) return options;
 
   try {
-    const { service_id: serviceId, from, to } = await req.json();
+    const { service_id: serviceId, from, to, exclude_booking_id: excludeBookingId } = await req.json();
 
     if (!serviceId || !from || !to) {
       return noStoreJson({ code: "MISSING_PARAMS" }, 400, req);
@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
     const rangeEnd = new Date(new Date(`${to}T00:00:00.000Z`).getTime() + 24 * 60 * 60 * 1000);
     const { data: bookings, error: bookingsError } = await supabase
       .from("bookings")
-      .select("starts_at,ends_at,status,expires_at")
+      .select("id,starts_at,ends_at,status,expires_at")
       .gte("starts_at", rangeStart.toISOString())
       .lt("starts_at", rangeEnd.toISOString())
       .or(`status.eq.confirmed,and(status.eq.pending_payment,expires_at.gt.${new Date().toISOString()})`);
@@ -126,7 +126,10 @@ Deno.serve(async (req) => {
       const startMinute = minutes(local.time);
       if (startMinute < minutes(opensAt) || startMinute + slotSpan > minutes(closesAt)) continue;
 
-      const busy = [...(bookings ?? []), ...(blocked ?? [])].some((item) =>
+      const busy = [
+        ...(bookings ?? []).filter((booking) => !excludeBookingId || booking.id !== excludeBookingId),
+        ...(blocked ?? []),
+      ].some((item) =>
         overlaps(start.getTime(), end.getTime(), new Date(item.starts_at).getTime(), new Date(item.ends_at).getTime())
       );
       if (!busy) results.push({ starts_at: start.toISOString(), local_date: local.date, local_time: local.time });

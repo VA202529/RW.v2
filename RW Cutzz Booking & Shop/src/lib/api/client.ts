@@ -7,6 +7,7 @@ import type {
   Review,
   Guest,
   AccountData,
+  ManageBookingSummary,
 } from "./types";
 import { mockServices, mockProducts, mockReviews, mockSlots, mockAccount } from "./mock";
 
@@ -62,6 +63,7 @@ export async function getSlots(args: {
   service_id: string;
   from: string;
   to: string;
+  exclude_booking_id?: string;
 }): Promise<string[]> {
   if (!HAS_BACKEND) {
     await sleep(200);
@@ -71,6 +73,7 @@ export async function getSlots(args: {
     service_id: args.service_id,
     from: args.from.slice(0, 10),
     to: args.to.slice(0, 10),
+    exclude_booking_id: args.exclude_booking_id,
   };
   const data = await edgeFunction<{ slots?: Array<string | { starts_at: string }> }>("get-slots", body);
   if (!data.slots) return [];
@@ -185,13 +188,11 @@ export async function getPublicReviews(): Promise<Review[]> {
 
 export async function getBookingSummary(args: {
   booking_id: string;
-}): Promise<{ service_name: string; starts_at: string }> {
+  cancellation_token?: string;
+  review_token?: string;
+}): Promise<ManageBookingSummary> {
   if (!HAS_BACKEND) {
-    await sleep(100);
-    return {
-      service_name: "Classic Fade",
-      starts_at: new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString(),
-    };
+    throw new ApiError("Geen backend geconfigureerd.", { code: "NO_BACKEND" });
   }
   return edgeFunction("get-booking-summary", args);
 }
@@ -231,8 +232,15 @@ export async function cancelBooking(args: {
   booking_id: string;
   action: "credit" | "refund";
   cancellation_token?: string;
-}): Promise<{ result: string }> {
-  if (!HAS_BACKEND) return { result: args.action === "credit" ? "credited" : "refunded" };
+}): Promise<{
+  status: number;
+  credited?: boolean;
+  refunded?: boolean;
+  forfeited?: boolean;
+  already_cancelled?: boolean;
+  refund_status?: "not_required" | "refunded" | "manual_required";
+}> {
+  if (!HAS_BACKEND) throw new ApiError("Geen backend geconfigureerd.", { code: "NO_BACKEND" });
   return edgeFunction("cancel-booking", args);
 }
 
@@ -240,8 +248,8 @@ export async function rescheduleBooking(args: {
   booking_id: string;
   new_starts_at: string;
   cancellation_token?: string;
-}): Promise<{ new_booking_id: string }> {
-  if (!HAS_BACKEND) return { new_booking_id: "reb-" + Math.random().toString(36).slice(2, 8) };
+}): Promise<{ new_booking_id: string; starts_at: string }> {
+  if (!HAS_BACKEND) throw new ApiError("Geen backend geconfigureerd.", { code: "NO_BACKEND" });
   return edgeFunction("reschedule-booking", args);
 }
 

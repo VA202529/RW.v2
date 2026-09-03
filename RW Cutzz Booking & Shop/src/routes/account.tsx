@@ -193,7 +193,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => toast.info("Verzetten flow (demo)")}
+                    onClick={() => (window.location.href = `/annuleer?booking=${encodeURIComponent(b.id)}`)}
                     className="border border-brand-text/20 px-3 py-2 text-[10px] font-bold uppercase tracking-widest"
                   >
                     Verzetten
@@ -208,7 +208,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
                           booking_id: b.id,
                           action: choice ? "credit" : "refund",
                         });
-                        toast.success(choice ? "Bewaard als tegoed" : "Terugbetaling aangevraagd");
+                        toast.success(choice ? "Bewaard als tegoed" : "Afspraak geannuleerd");
                         qc.invalidateQueries({ queryKey: ["account"] });
                       } catch (e) {
                         toast.error(dutchError(e));

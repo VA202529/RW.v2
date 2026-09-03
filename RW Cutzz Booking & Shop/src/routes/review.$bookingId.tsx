@@ -30,8 +30,8 @@ function ReviewPage() {
   const { bookingId } = Route.useParams();
   const { token } = Route.useSearch();
   const { data } = useQuery({
-    queryKey: ["booking-summary", bookingId],
-    queryFn: () => getBookingSummary({ booking_id: bookingId }),
+    queryKey: ["booking-summary", bookingId, token],
+    queryFn: () => getBookingSummary({ booking_id: bookingId, review_token: token }),
   });
   const [rating, setRating] = useState(0);
   const [body, setBody] = useState("");

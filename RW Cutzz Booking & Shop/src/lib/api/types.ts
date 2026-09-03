@@ -78,6 +78,26 @@ export type AccountData = {
   notification_prefs: { whatsapp_opt_in: boolean; marketing_email_opt_in: boolean };
 };
 
+export type ManageBookingSummary = {
+  status: number;
+  booking_id: string;
+  service_id: string;
+  service_name: string;
+  starts_at: string;
+  ends_at: string;
+  booking_status: "pending_payment" | "confirmed" | "completed" | "cancelled" | "no_show" | "superseded" | "refunded_conflict";
+  duration_minutes: number;
+  deposit_cents: number;
+  remaining_cents: number;
+  paid_deposit_cents: number;
+  payment_provider?: "stripe" | "mollie" | "credit" | null;
+  payment_status?: "pending" | "paid" | "refunded" | "partially_refunded" | "failed" | null;
+  before_cancellation_deadline: boolean;
+  can_cancel: boolean;
+  can_reschedule: boolean;
+  already_cancelled: boolean;
+};
+
 export class ApiError extends Error {
   code?: string;
   status?: number;
