@@ -6,3 +6,12 @@ verify_jwt = false
 
 [functions.mollie-oauth-connect]
 verify_jwt = false
+
+[functions.mollie-token-refresh]
+verify_jwt = true
+
+[functions.admin-system-settings]
+verify_jwt = false
+
+[functions.account-data]
+verify_jwt = false
