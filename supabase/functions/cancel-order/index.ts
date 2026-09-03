@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
       p_cancel_token: body.cancellation_token ?? null,
     });
     if (error) throw error;
-    if (prepared.status !== 200) return json(prepared, prepared.status);
+    if (prepared.status !== 200) return json(prepared, prepared.status, {}, req);
     let refunded = false;
     if (prepared.requires_refund) {
       await stripeClient().refunds.create(
@@ -29,9 +29,9 @@ Deno.serve(async (req) => {
     const { data: finalized, error: finalError } = await supabase.rpc("wp4_finalize_cancel_order", { p_order_id: body.order_id, p_refunded: refunded });
     if (finalError) throw finalError;
     await sendTransactionalEmail({ template: "order_cancelled", to: finalized.customer_email, customer_id: finalized.customer_id, order_id: body.order_id, data: finalized });
-    return json(finalized);
+    return json(finalized, 200, {}, req);
   } catch (error) {
     console.error(error);
-    return json({ code: "SERVER_ERROR" }, 500);
+    return json({ code: "SERVER_ERROR" }, 500, {}, req);
   }
 });

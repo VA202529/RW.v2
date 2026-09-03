@@ -6,7 +6,7 @@ Deno.serve(async (req) => {
   const options = handleOptions(req);
   if (options) return options;
   const userId = await authUserId(req);
-  if (!userId) return json({ code: "UNAUTHENTICATED" }, 401);
+  if (!userId) return json({ code: "UNAUTHENTICATED" }, 401, {}, req);
   try {
     const body = await req.json();
     const { data, error } = await serviceClient().rpc("wp6_update_customer_phone", {
@@ -14,9 +14,9 @@ Deno.serve(async (req) => {
       p_phone_e164: body.phone_e164,
     });
     if (error) throw error;
-    return json(data, data.status ?? 200);
+    return json(data, data.status ?? 200, {}, req);
   } catch (error) {
     console.error(error);
-    return json({ code: "SERVER_ERROR" }, 500);
+    return json({ code: "SERVER_ERROR" }, 500, {}, req);
   }
 });

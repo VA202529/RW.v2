@@ -1,14 +1,20 @@
 const env = import.meta.env;
 
-const activeAddress = parseAddress(env.VITE_ADDRESS as string | undefined);
+const activeAddress = parseAddress(
+  (env.VITE_ADDRESS as string | undefined) ?? "Buikslotermeerplein 13, 1025 ES Amsterdam",
+);
+const websiteUrl = (
+  (env.VITE_PUBLIC_SITE_URL as string | undefined) ??
+  (env.VITE_SITE_URL as string | undefined) ??
+  "https://rwcutzz.com"
+).replace(/\/$/, "");
 
 export const businessConfig = {
   businessName: "RW CUTZZ",
   alternateName: "RWCUTZZ",
   tagline: "Fresher Than Clean",
   category: "HairSalon",
-  websiteUrl: "https://rwcutzz.com",
-  vercelUrl: "https://rw-v2-website.vercel.app",
+  websiteUrl,
   kvk: "94077991",
   legalForm: "Eenmanszaak",
   phoneDisplay: "+31 6 18954868",

@@ -16,9 +16,9 @@ Deno.serve(async (req) => {
       p_body: body.body,
     });
     if (error) throw error;
-    return json(data, data.status ?? 200);
+    return json(data, data.status ?? 200, {}, req);
   } catch (error) {
     console.error(error);
-    return json({ code: "SERVER_ERROR" }, 500);
+    return json({ code: "SERVER_ERROR" }, 500, {}, req);
   }
 });

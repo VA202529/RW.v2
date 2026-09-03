@@ -6,13 +6,13 @@ Deno.serve(async (req) => {
   const options = handleOptions(req);
   if (options) return options;
   const userId = await authUserId(req);
-  if (!userId) return json({ code: "UNAUTHENTICATED" }, 401);
+  if (!userId) return json({ code: "UNAUTHENTICATED" }, 401, {}, req);
   const body = await req.json();
   const { data, error } = await serviceClient().rpc("wp2_update_notification_prefs", {
     p_auth_user_id: userId,
     p_whatsapp_opt_in: body.whatsapp_opt_in === true,
     p_marketing_email_opt_in: body.marketing_email_opt_in === true,
   });
-  if (error) return json({ code: "SERVER_ERROR" }, 500);
-  return json(data, data.status ?? 200);
+  if (error) return json({ code: "SERVER_ERROR" }, 500, {}, req);
+  return json(data, data.status ?? 200, {}, req);
 });

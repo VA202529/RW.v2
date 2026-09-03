@@ -1,20 +1,26 @@
 const allowedOrigins = [
-  "https://rw-v2-website.vercel.app",
   "https://rwcutzz.com",
-  "http://localhost:8080",
+  "https://www.rwcutzz.com",
+  "https://rw-v2-website-va202529s-projects.vercel.app",
+  "https://rw-v2-website.vercel.app",
+  "https://admin.rwcutzz.com",
+  "https://barberflow-admin.vercel.app",
   "http://localhost:5173",
-  "http://192.168.68.134:8080",
+  "http://localhost:8080",
+  "http://localhost:3000",
 ];
 
 export function corsHeaders(req?: Request) {
   const origin = req?.headers.get("origin") ?? "";
-  const allowOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
-  return {
-    "Access-Control-Allow-Origin": allowOrigin,
+  const headers: Record<string, string> = {
     "Vary": "Origin",
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, stripe-signature, x-hub-signature-256",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   };
+  if (allowedOrigins.includes(origin)) {
+    headers["Access-Control-Allow-Origin"] = origin;
+  }
+  return headers;
 }
 
 export const defaultCorsHeaders = {

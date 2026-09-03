@@ -6,11 +6,11 @@ Deno.serve(async (req) => {
   const options = handleOptions(req);
   if (options) return options;
   const userId = await authUserId(req);
-  if (!userId) return json({ code: "UNAUTHENTICATED" }, 401);
+  if (!userId) return json({ code: "UNAUTHENTICATED" }, 401, {}, req);
   const supabase = serviceClient();
   const { data, error } = await supabase.rpc("wp2_get_account", { p_auth_user_id: userId });
-  if (error) return json({ code: "SERVER_ERROR" }, 500);
-  if (!data || data.status !== 200) return json(data ?? { code: "CUSTOMER_NOT_FOUND" }, data?.status ?? 404);
+  if (error) return json({ code: "SERVER_ERROR" }, 500, {}, req);
+  if (!data || data.status !== 200) return json(data ?? { code: "CUSTOMER_NOT_FOUND" }, data?.status ?? 404, {}, req);
 
   const { data: orders } = await supabase.rpc("wp4_get_account_orders", { p_auth_user_id: userId });
   const { data: reviews } = await supabase.rpc("wp5_get_account_reviews", { p_auth_user_id: userId });
@@ -29,5 +29,5 @@ Deno.serve(async (req) => {
       marketing_email_opt_in: false,
       reminder_3h_enabled: true,
     },
-  }, 200);
+  }, 200, {}, req);
 });

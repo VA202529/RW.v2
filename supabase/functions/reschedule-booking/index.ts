@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
       p_cancel_token: body.cancellation_token ?? null,
     });
     if (error) throw error;
-    if (data.status !== 200) return json(data, data.status);
+    if (data.status !== 200) return json(data, data.status, {}, req);
     const details = await bookingDetails(supabase, data.new_booking_id);
     if (details?.whatsapp_opt_in && details.phone_e164) {
       const parts = dateParts(data.starts_at);
@@ -37,10 +37,10 @@ Deno.serve(async (req) => {
       booking_id: data.new_booking_id,
       data,
     });
-    return json(data, 200);
+    return json(data, 200, {}, req);
   } catch (error) {
     console.error(error);
-    return json({ code: "SERVER_ERROR" }, 500);
+    return json({ code: "SERVER_ERROR" }, 500, {}, req);
   }
 });
 

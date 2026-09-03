@@ -9,6 +9,6 @@ Deno.serve(async (req) => {
     .select("id,name,description,price_cents,stock,is_active,image_paths,category")
     .eq("is_active", true)
     .order("name");
-  if (error) return noStoreJson({ code: "SERVER_ERROR" }, 500);
-  return noStoreJson({ products: data ?? [] });
+  if (error) return noStoreJson({ code: "SERVER_ERROR" }, 500, req);
+  return noStoreJson({ products: data ?? [] }, 200, req);
 });

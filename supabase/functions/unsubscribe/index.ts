@@ -15,12 +15,12 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const token = String(body.token ?? "");
     const decoded = JSON.parse(atob(token)) as { email: string; sig: string };
-    if (!decoded.email || decoded.sig !== await sign(decoded.email)) return json({ code: "FORBIDDEN" }, 403);
+    if (!decoded.email || decoded.sig !== await sign(decoded.email)) return json({ code: "FORBIDDEN" }, 403, {}, req);
     const { data, error } = await serviceClient().rpc("wp2_unsubscribe_email", { p_email: decoded.email });
     if (error) throw error;
-    return json(data, data.status ?? 200);
+    return json(data, data.status ?? 200, {}, req);
   } catch (error) {
     console.error(error);
-    return json({ code: "FORBIDDEN" }, 403);
+    return json({ code: "FORBIDDEN" }, 403, {}, req);
   }
 });

@@ -2,7 +2,7 @@ import { authUserId } from "../_shared/auth.ts";
 import { handleOptions, json } from "../_shared/http.ts";
 import { serviceClient } from "../_shared/supabase.ts";
 import { connectedAccount, stripeClient } from "../_shared/stripe.ts";
-import { sendTransactionalEmail } from "../_shared/email.ts";
+import { sendTransactionalEmailOnce } from "../_shared/email.ts";
 import { bodyComponent, cents, dateParts, firstName, sendWhatsAppTemplate } from "../_shared/whatsapp.ts";
 
 Deno.serve(async (req) => {
@@ -20,11 +20,11 @@ Deno.serve(async (req) => {
       p_cancel_token: body.cancellation_token ?? null,
     });
     if (error) throw error;
-    if (prepared.status !== 200) return json(prepared, prepared.status);
+    if (prepared.status !== 200) return json(prepared, prepared.status, {}, req);
 
     let refunded = false;
     if (prepared.requires_refund) {
-      if (!prepared.payment_intent_id) return json({ code: "PAYMENT_INTENT_MISSING" }, 500);
+      if (!prepared.payment_intent_id) return json({ code: "PAYMENT_INTENT_MISSING" }, 500, {}, req);
       await stripeClient().refunds.create(
         { payment_intent: prepared.payment_intent_id, refund_application_fee: true },
         { stripeAccount: connectedAccount() }
@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    await sendTransactionalEmail({
+    await sendTransactionalEmailOnce({
       template: "booking_cancelled",
       to: finalized.customer_email,
       customer_id: finalized.customer_id,
@@ -58,10 +58,10 @@ Deno.serve(async (req) => {
       data: { ...finalized, deposit_cents: prepared.deposit_cents },
     });
 
-    return json(finalized, 200);
+    return json(finalized, 200, {}, req);
   } catch (error) {
     console.error(error);
-    return json({ code: "SERVER_ERROR" }, 500);
+    return json({ code: "SERVER_ERROR" }, 500, {}, req);
   }
 });
 

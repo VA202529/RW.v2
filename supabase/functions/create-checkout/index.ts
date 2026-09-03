@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
     const supabase = serviceClient();
     const { data, error } = await supabase.rpc("wp1_prepare_checkout", { p_booking_id: booking_id });
     if (error) throw error;
-    if (data.status !== 200) return json(data, data.status);
+    if (data.status !== 200) return json(data, data.status, {}, req);
     if (!data.requires_stripe) {
       const details = await bookingDetails(supabase, data.booking_id);
       if (details?.whatsapp_opt_in && details.phone_e164) {
@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
         booking_id: data.booking_id,
         data: { ...data, cancel_token: cancellation_token },
       });
-      return json({ confirmed: true, booking_id: data.booking_id });
+      return json({ confirmed: true, booking_id: data.booking_id }, 200, {}, req);
     }
 
     const stripe = stripeClient();
@@ -74,10 +74,10 @@ Deno.serve(async (req) => {
     });
     if (attachError) throw attachError;
 
-    return json({ url: session.url, booking_id: data.booking_id, amount_due_cents: data.amount_due_cents });
+    return json({ url: session.url, booking_id: data.booking_id, amount_due_cents: data.amount_due_cents }, 200, {}, req);
   } catch (error) {
     console.error(error);
-    return json({ code: "SERVER_ERROR" }, 500);
+    return json({ code: "SERVER_ERROR" }, 500, {}, req);
   }
 });
 
