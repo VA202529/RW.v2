@@ -3,7 +3,7 @@ import { handleOptions, json } from "../_shared/http.ts";
 import { centsToMollieValue, mollieRequest } from "../_shared/mollie.ts";
 import { serviceClient } from "../_shared/supabase.ts";
 import { readMollieToken } from "../_shared/crypto.ts";
-import { sendTransactionalEmailOnce } from "../_shared/email.ts";
+import { sendTransactionalEmail } from "../_shared/email.ts";
 import { bodyComponent, cents, dateParts, firstName, sendWhatsAppTemplate } from "../_shared/whatsapp.ts";
 
 Deno.serve(async (req) => {
@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    await sendTransactionalEmailOnce({
+    await sendTransactionalEmail({
       template: "booking_cancelled",
       to: finalized.customer_email,
       customer_id: finalized.customer_id,
