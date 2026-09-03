@@ -19,6 +19,11 @@ export async function decryptToken(ciphertext: string): Promise<string> {
   return new TextDecoder().decode(plaintext);
 }
 
+export async function readMollieToken(value: string): Promise<string> {
+  if (!value.includes(":")) return value;
+  return decryptToken(value);
+}
+
 async function encryptionKey() {
   const raw = Deno.env.get("MOLLIE_TOKEN_ENCRYPTION_KEY");
   if (!raw) throw new Error("Missing MOLLIE_TOKEN_ENCRYPTION_KEY");

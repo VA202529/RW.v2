@@ -4,6 +4,7 @@ import test from "node:test";
 
 const source = readFileSync("supabase/functions/cancel-booking/index.ts", "utf8");
 const emailSource = readFileSync("supabase/functions/_shared/email.ts", "utf8");
+const cryptoSource = readFileSync("supabase/functions/_shared/crypto.ts", "utf8");
 
 test("cancel-booking imports an email helper that exists", () => {
   const match = source.match(/import\s+\{\s*([^}]+)\s*\}\s+from\s+"..\/_shared\/email\.ts"/);
@@ -12,6 +13,16 @@ test("cancel-booking imports an email helper that exists", () => {
   const imported = match[1].split(",").map((name) => name.trim());
   for (const name of imported) {
     assert.match(emailSource, new RegExp(`export\\s+async\\s+function\\s+${name}\\b`));
+  }
+});
+
+test("cancel-booking imports a Mollie token reader that exists", () => {
+  const match = source.match(/import\s+\{\s*([^}]+)\s*\}\s+from\s+"..\/_shared\/crypto\.ts"/);
+  assert.ok(match, "expected cancel-booking to import from shared crypto helper");
+
+  const imported = match[1].split(",").map((name) => name.trim());
+  for (const name of imported) {
+    assert.match(cryptoSource, new RegExp(`export\\s+async\\s+function\\s+${name}\\b`));
   }
 });
 
