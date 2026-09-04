@@ -15,6 +15,50 @@ De klantensite is bedoeld voor bezoekers en klanten van RW CUTZZ. Daar kunnen zi
 
 De backend/admin-kant is bedoeld voor beheer. De admin kan agenda, boekingen, beschikbaarheid, diensten, klanten, webshopproducten, bestellingen, reviews, aankondigingen en statistieken beheren.
 
+## Canonical Customer UI — DO NOT REGRESS
+
+De canonical customer app is `RW Cutzz Booking & Shop/` en de canonical production domain is `https://rwcutzz.com`.
+
+De live customer homepage moet de vaste RW CUTZZ visuele identiteit behouden:
+
+- RW CUTZZ branding.
+- Zwarte hero met blauwe accentkleur.
+- Echte RW CUTZZ/barbershop hero-foto.
+- Headline `FRESHER THAN CLEAN.` met `CLEAN.` in blauwe accentstijl.
+- Eyebrow `RW CUTZZ · AMSTERDAM-NOORD`.
+- CTA `BOEK NU`.
+- CTA `BEKIJK SHOP`.
+- Header/navigation met `HOME`, `DIENSTEN`, `BOEKEN`, `WINKEL`, `CONTACT`, `ACCOUNT`.
+
+De variant met `Kapper & Barbershop Noord.` als homepage hero en/of een AI-generated/stylized portrait als hero is niet de canonical RW CUTZZ customer UI. Deze variant mag niet opnieuw als productie-UI op `rwcutzz.com` worden gedeployed.
+
+Admin en customer UI zijn aparte applicaties:
+
+- Customer: `RW Cutzz Booking & Shop/` -> `rwcutzz.com`.
+- Admin/backoffice: aparte admin/root-app -> `admin.rwcutzz.com`.
+
+Een admin UI, legacy Lovable UI, snapshot of oude frontend mag nooit automatisch de customer production UI vervangen alleen omdat die map een complete frontend bevat. Legacy/snapshot folders zijn geen source of truth voor productie zonder expliciete verificatie.
+
+Current known-good visual baseline:
+
+- Commit: `7f843149adfc27dd114dc5c3f66269df1c120d61`.
+- Commit message: `Restore canonical RW CUTZZ customer UI`.
+- Production deployment at time of documentation: `dpl_B9CAbMn7cbv1VBDY4nWFr9uEFbEn`.
+
+Deze commit/deployment is een referentiebaseline, geen instructie om toekomstige functionele wijzigingen terug te draaien. Nieuwe fixes mogen hier bovenop komen, maar de visuele identiteit moet bewust behouden blijven.
+
+Before changing or deploying customer UI:
+
+1. Confirm app = `RW Cutzz Booking & Shop`.
+2. Confirm target domain = `rwcutzz.com`.
+3. Confirm canonical hero/branding is preserved.
+4. Do not replace the real RW CUTZZ hero with an AI/stylized portrait.
+5. Do not restore the legacy `Kapper & Barbershop Noord.` homepage hero.
+6. Preserve current functional booking/auth/payment fixes.
+7. If uncertain which UI is canonical, stop rather than choosing a legacy snapshot.
+
+A deployment is visually wrong if the live homepage contains `Kapper & Barbershop Noord.` as the hero or uses the known AI/stylized portrait instead of the canonical RW CUTZZ hero presentation. A deployment is visually correct only when the intended RW CUTZZ black/blue identity and real hero presentation are preserved. Do not rely only on `build passed` or Vercel `Ready`; after customer UI deployment, visually verify the live homepage.
+
 ## 2. Architecture
 
 | Laag | Technologie / locatie |
