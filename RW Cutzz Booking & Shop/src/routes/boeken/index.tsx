@@ -50,6 +50,7 @@ type State = {
   guest?: Guest;
   turnstile?: string;
   booking_id?: string;
+  cancellation_token?: string;
   expires_at?: string;
   deposit_cents?: number;
 };
@@ -61,7 +62,7 @@ type Action =
   | { type: "set_date"; d: string }
   | { type: "set_slot"; s: string }
   | { type: "set_guest"; g: Guest; t: string }
-  | { type: "hold"; booking_id: string; expires_at: string; deposit_cents: number };
+  | { type: "hold"; booking_id: string; cancellation_token: string; expires_at: string; deposit_cents: number };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -81,6 +82,7 @@ function reducer(state: State, action: Action): State {
       return {
         ...state,
         booking_id: action.booking_id,
+        cancellation_token: action.cancellation_token,
         expires_at: action.expires_at,
         deposit_cents: action.deposit_cents,
       };
@@ -106,30 +108,30 @@ function Boeken() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-bg text-brand-text flex flex-col">
+    <div className="min-h-screen bg-brand-bg text-brand-text flex flex-col overflow-x-hidden">
       <SiteHeader />
-      <section className="pt-28 pb-20 px-6">
-        <div className="max-w-5xl mx-auto">
-          <p className="text-brand-accent text-xs font-bold tracking-[0.3em] uppercase mb-3">
+      <section className="pt-28 md:pt-32 lg:pt-36 pb-24 md:pb-20 px-5 sm:px-6 md:px-8">
+        <div className="max-w-2xl md:max-w-3xl lg:max-w-5xl mx-auto">
+          <p className="text-brand-accent text-[10px] sm:text-xs font-bold tracking-[0.25em] uppercase mb-3">
             Boeken
           </p>
-          <h1 className="font-display text-4xl md:text-5xl font-extrabold tracking-tighter mb-8">
-            Boek je afspraak bij RW CUTZZ
+          <h1 className="font-display font-extrabold tracking-tight leading-[1.05] mb-4 text-[clamp(2rem,6vw,3rem)] text-balance">
+            Reserveer je stoel
           </h1>
-          <p className="mb-8 max-w-2xl text-sm text-brand-muted">
+          <p className="mb-8 max-w-xl text-sm sm:text-base leading-relaxed text-brand-muted">
             Kies je behandeling en tijdslot voor de tijdelijke salonlocatie aan{" "}
             {businessConfig.activeLocation.streetAddress} in Amsterdam-Noord.
           </p>
 
           {/* Progress */}
-          <ol className="grid grid-cols-4 gap-2 mb-10 text-[11px] uppercase tracking-widest">
+          <ol className="grid grid-cols-2 gap-2 mb-10 text-[10px] uppercase tracking-[0.18em] sm:grid-cols-4 sm:text-[11px] sm:tracking-widest">
             {["Dienst", "Datum & tijd", "Gegevens", "Betaling"].map((label, i) => {
               const active = state.step === i + 1;
               const done = state.step > i + 1;
               return (
                 <li
                   key={label}
-                  className={`px-3 py-3 border-l-2 ${
+                  className={`min-w-0 px-3 py-3 border-l-2 ${
                     active
                       ? "border-brand-accent text-brand-accent font-bold"
                       : done
@@ -138,7 +140,7 @@ function Boeken() {
                   }`}
                 >
                   <span className="block text-[10px] mb-1">Stap {i + 1}</span>
-                  {label}
+                  <span className="block min-w-0 break-words leading-snug">{label}</span>
                 </li>
               );
             })}
@@ -181,6 +183,7 @@ function Boeken() {
                   dispatch({
                     type: "hold",
                     booking_id: res.booking_id,
+                    cancellation_token: res.cancel_token,
                     expires_at: res.expires_at,
                     deposit_cents: dep,
                   });
@@ -205,6 +208,7 @@ function Boeken() {
                   const res = await createCheckout({
                     booking_id: state.booking_id!,
                     service_id: selectedService.id,
+                    cancellation_token: state.cancellation_token!,
                   });
                   if (res.checkout_url) {
                     window.location.href = res.checkout_url;
@@ -234,7 +238,7 @@ function Step1({
   onSelect: (id: string) => void;
 }) {
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4 md:grid-cols-2 items-stretch">
       {services.map((s) => {
         const active = s.id === value;
         const dep = serviceDepositCents(s);
@@ -243,16 +247,16 @@ function Step1({
             key={s.id}
             type="button"
             onClick={() => onSelect(s.id)}
-            className={`text-left p-5 border rounded transition ${
+            className={`w-full min-w-0 h-full text-left p-5 border rounded-lg transition ${
               active
                 ? "border-brand-accent bg-brand-surface glow-accent"
                 : "border-brand-text/10 bg-brand-surface hover:border-brand-accent/40"
             }`}
           >
-            <div className="flex justify-between items-start gap-4">
-              <div className="flex-1">
-                <h3 className="font-display text-xl">{s.name}</h3>
-                <p className="text-sm text-brand-muted mt-1">{s.description}</p>
+            <div className="flex h-full justify-between items-start gap-4">
+              <div className="min-w-0 flex-1">
+                <h3 className="break-words font-display text-xl leading-tight">{s.name}</h3>
+                <p className="mt-1 break-words text-sm text-brand-muted">{s.description}</p>
                 <div className="mt-2 flex gap-2 flex-wrap">
                   <span className="text-[11px] bg-brand-bg px-2 py-1 rounded">
                     {s.duration_minutes} min
@@ -262,7 +266,7 @@ function Step1({
                   </span>
                 </div>
               </div>
-              <p className="text-brand-accent font-bold font-display text-xl">
+              <p className="shrink-0 text-brand-accent font-bold font-display text-xl">
                 {euros(s.price_cents)}
               </p>
             </div>
@@ -319,11 +323,11 @@ function Step2({
   const weekdays = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      <div>
-        <div className="flex items-center justify-between mb-4">
+    <div className="grid gap-6 lg:grid-cols-2">
+      <div className="min-w-0">
+        <div className="mb-4 flex items-center justify-between gap-3">
           <p className="text-xs uppercase tracking-widest text-brand-muted">Datum</p>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <button
               type="button"
               onClick={() => {
@@ -336,7 +340,7 @@ function Step2({
             >
               ‹
             </button>
-            <span className="text-sm font-medium capitalize min-w-[110px] text-center">
+            <span className="min-w-[96px] text-center text-sm font-medium capitalize sm:min-w-[110px]">
               {format(monthCursor, "MMMM yyyy", { locale: nl })}
             </span>
             <button
@@ -354,7 +358,7 @@ function Step2({
           </div>
         </div>
 
-        <div className="bg-brand-surface border border-brand-text/10 rounded p-3">
+        <div className="bg-brand-surface border border-brand-text/10 rounded-lg p-3 sm:p-4">
           <div className="grid grid-cols-7 gap-1 mb-2">
             {weekdays.map((w) => (
               <div
@@ -377,7 +381,7 @@ function Step2({
                   key={key}
                   disabled={past}
                   onClick={() => onDate(key)}
-                  className={`aspect-square flex items-center justify-center text-sm rounded border transition ${
+                  className={`aspect-square min-h-9 flex items-center justify-center text-sm rounded border transition ${
                     active
                       ? "bg-brand-accent text-white border-brand-accent glow-accent font-bold"
                       : "border-transparent hover:border-brand-accent/40"
@@ -393,8 +397,8 @@ function Step2({
         </div>
       </div>
 
-      <div>
-        <div className="flex items-center justify-between mb-4">
+      <div className="min-w-0">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between mb-4">
           <p className="text-xs uppercase tracking-widest text-brand-muted">Tijd</p>
           {slot && (
             <span className="text-xs text-brand-muted">
@@ -403,7 +407,7 @@ function Step2({
           )}
         </div>
         {isLoading ? (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {Array.from({ length: 12 }).map((_, i) => (
               <div key={i} className="h-11 bg-brand-surface animate-pulse rounded" />
             ))}
@@ -411,7 +415,7 @@ function Step2({
         ) : slots.length === 0 ? (
           <EmptyState title="Geen beschikbare tijden op deze dag." />
         ) : (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {slots.map((s) => {
               const active = s === slot;
               return (
@@ -419,7 +423,7 @@ function Step2({
                   key={s}
                   type="button"
                   onClick={() => onSlot(s)}
-                  className={`py-3 text-sm font-medium border rounded transition ${
+                  className={`min-h-11 px-2 py-3 text-sm font-medium border rounded transition ${
                     active
                       ? "bg-brand-accent text-white border-brand-accent glow-accent"
                       : "bg-brand-surface border-brand-text/10 hover:border-brand-accent/40"
@@ -433,14 +437,14 @@ function Step2({
         )}
       </div>
 
-      <div className="flex justify-between pt-4 md:col-span-2">
-        <button onClick={onBack} className="text-xs font-bold uppercase tracking-widest">
+      <div className="flex justify-between gap-3 pt-4 lg:col-span-2">
+        <button onClick={onBack} className="text-xs font-bold uppercase tracking-widest min-h-11">
           ← Terug
         </button>
         <button
           onClick={onNext}
           disabled={!slot}
-          className="bg-brand-accent text-white px-6 py-3 text-xs font-bold uppercase tracking-widest disabled:opacity-40 hover:glow-accent transition"
+          className="bg-brand-accent text-white px-6 py-3 text-xs font-bold uppercase tracking-widest rounded disabled:opacity-40 hover:glow-accent transition"
         >
           Volgende →
         </button>
@@ -471,7 +475,10 @@ function Step3({
       <p className="text-xs text-brand-muted">
         Kosteloos annuleren of verzetten tot 24 uur voor je afspraak. Daarna vervalt de aanbetaling.
       </p>
-      <button onClick={onBack} className="text-xs font-bold uppercase tracking-widest text-left">
+      <button
+        onClick={onBack}
+        className="text-xs font-bold uppercase tracking-widest text-left min-h-11"
+      >
         ← Terug
       </button>
     </div>
@@ -498,34 +505,40 @@ function Step4({
 }) {
   const [loading, setLoading] = useState(false);
   return (
-    <div className="grid gap-6">
-      <div className="bg-brand-surface border border-brand-text/10 rounded p-6">
+    <div className="grid gap-6 pb-24 md:pb-0">
+      <div className="bg-brand-surface border border-brand-text/10 rounded-lg p-5 sm:p-6">
         <p className="text-xs uppercase tracking-widest text-brand-muted mb-3">Samenvatting</p>
-        <div className="grid gap-2 text-sm">
-          <div className="flex justify-between">
+        <div className="grid gap-3 text-sm">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
             <span>Dienst</span>
-            <span className="font-medium">{service}</span>
+            <span className="min-w-0 font-medium sm:max-w-[60%] sm:text-right">{service}</span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
             <span>Datum &amp; tijd</span>
-            <span className="font-medium">{dutchDate(slot)}</span>
+            <span className="min-w-0 font-medium sm:max-w-[60%] sm:text-right">
+              {dutchDate(slot)}
+            </span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
             <span>Locatie</span>
-            <span className="font-medium">RW CUTZZ, {formatActiveAddress()}</span>
+            <span className="min-w-0 break-words font-medium sm:max-w-[60%] sm:text-right">
+              RW CUTZZ, {formatActiveAddress()}
+            </span>
           </div>
-          <div className="flex justify-between pt-2 border-t border-brand-text/10">
+          <div className="flex flex-col gap-1 border-t border-brand-text/10 pt-2 sm:flex-row sm:items-start sm:justify-between">
             <span>Aanbetaling</span>
-            <span className="font-bold text-brand-accent">{euros(deposit_cents)}</span>
+            <span className="font-bold text-brand-accent sm:text-right">
+              {euros(deposit_cents)}
+            </span>
           </div>
-          <div className="flex justify-between text-brand-muted">
+          <div className="flex flex-col gap-1 text-brand-muted sm:flex-row sm:items-start sm:justify-between">
             <span>Nog te voldoen in de zaak</span>
-            <span>{euros(price_cents - deposit_cents)}</span>
+            <span className="sm:text-right">{euros(price_cents - deposit_cents)}</span>
           </div>
         </div>
       </div>
 
-      <div className="bg-brand-dark text-white p-4 rounded flex items-center justify-between">
+      <div className="bg-brand-dark text-white p-4 rounded-lg flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <span className="text-sm">⏱ Je tijdslot is gereserveerd — nog</span>
         <span className="text-brand-accent font-bold text-lg">
           <Countdown until={expires_at} onExpire={onExpire} />
@@ -539,12 +552,12 @@ function Step4({
           setLoading(false);
         }}
         disabled={loading}
-        className="bg-brand-accent text-white px-8 py-4 text-xs font-bold uppercase tracking-widest hover:glow-accent-lg transition disabled:opacity-50"
+        className="bg-brand-accent text-white px-8 py-4 text-xs font-bold uppercase tracking-widest rounded hover:glow-accent-lg transition disabled:opacity-50"
       >
         {loading ? "Bezig..." : `Betaal aanbetaling ${euros(deposit_cents)}`}
       </button>
 
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-brand-bg border-t border-brand-text/10 p-4 z-30">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-brand-bg/95 backdrop-blur border-t border-brand-text/10 p-4 z-30">
         <button
           onClick={async () => {
             setLoading(true);
@@ -552,7 +565,7 @@ function Step4({
             setLoading(false);
           }}
           disabled={loading}
-          className="w-full bg-brand-accent text-white px-6 py-3 text-xs font-bold uppercase tracking-widest"
+          className="w-full bg-brand-accent text-white px-6 py-3 text-xs font-bold uppercase tracking-widest rounded"
         >
           {loading ? "Bezig..." : `Betaal ${euros(deposit_cents)}`}
         </button>

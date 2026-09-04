@@ -35,19 +35,22 @@ function Checkout() {
   const total = lines.reduce((s, l) => s + l.product.price_cents * l.quantity, 0);
 
   return (
-    <div className="min-h-screen bg-brand-bg flex flex-col">
+    <div className="min-h-screen bg-brand-bg flex flex-col overflow-x-hidden">
       <SiteHeader />
-      <section className="pt-28 pb-20 px-6">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="font-display text-4xl md:text-5xl font-extrabold tracking-tighter mb-8">
+      <section className="pt-28 md:pt-32 lg:pt-36 pb-16 md:pb-20 px-5 sm:px-6 md:px-8">
+        <div className="max-w-5xl mx-auto">
+          <p className="text-brand-accent text-[10px] sm:text-xs font-bold tracking-[0.25em] uppercase mb-3">
+            Webshop
+          </p>
+          <h1 className="font-display font-extrabold tracking-tight leading-[1.05] mb-8 text-[clamp(2rem,6vw,3rem)]">
             Afrekenen
           </h1>
 
           {items.length === 0 ? (
             <EmptyState title="Je winkelwagen is leeg." />
           ) : (
-            <div className="grid md:grid-cols-[1fr_360px] gap-8 items-start">
-              <div className="bg-brand-surface border border-brand-text/10 rounded p-6">
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8 items-start">
+              <div className="min-w-0 bg-brand-surface border border-brand-text/10 rounded-lg p-5 sm:p-6">
                 <GuestForm
                   submitLabel={`Betaal ${euros(total)}`}
                   onSubmit={async (guest, token) => {
@@ -75,15 +78,15 @@ function Checkout() {
                 </p>
               </div>
 
-              <aside className="bg-brand-surface border border-brand-text/10 rounded p-6">
+              <aside className="min-w-0 bg-brand-surface border border-brand-text/10 rounded-lg p-5 sm:p-6 lg:sticky lg:top-28">
                 <p className="text-xs uppercase tracking-widest text-brand-muted mb-4">Overzicht</p>
                 <ul className="grid gap-3 text-sm">
                   {lines.map((l) => (
-                    <li key={l.product_id} className="flex justify-between gap-2">
-                      <span className="truncate">
+                    <li key={l.product_id} className="flex justify-between gap-3">
+                      <span className="min-w-0 break-words">
                         {l.quantity}× {l.product.name}
                       </span>
-                      <span>{euros(l.product.price_cents * l.quantity)}</span>
+                      <span className="shrink-0">{euros(l.product.price_cents * l.quantity)}</span>
                     </li>
                   ))}
                 </ul>

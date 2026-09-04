@@ -34,9 +34,9 @@ function Account() {
   const { signedIn, signIn, signOut, sendMagicLink, hasBackend } = useMockAuth();
 
   return (
-    <div className="min-h-screen bg-brand-bg flex flex-col">
+    <div className="min-h-screen bg-brand-bg flex flex-col overflow-x-hidden">
       <SiteHeader />
-      <section className="flex-1 pt-28 pb-20 px-6 max-w-4xl mx-auto w-full">
+      <section className="flex-1 pt-28 sm:pt-32 pb-16 sm:pb-20 px-5 sm:px-6 md:px-8 max-w-5xl mx-auto w-full min-w-0">
         {!signedIn ? (
           <SignInBlock onDemo={signIn} onMagicLink={sendMagicLink} hasBackend={hasBackend} />
         ) : (
@@ -60,14 +60,17 @@ function SignInBlock({
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   return (
-    <div className="max-w-md mx-auto text-center">
-      <h1 className="font-display text-4xl font-extrabold tracking-tighter mb-4">Inloggen</h1>
-      <p className="text-brand-muted mb-8">
+    <div className="max-w-md mx-auto text-center bg-brand-surface border border-brand-text/10 rounded-lg p-5 sm:p-7 shadow-[0_18px_60px_rgba(0,0,0,0.25)]">
+      <p className="text-xs uppercase tracking-widest text-brand-muted mb-3">Mijn RW CUTZZ</p>
+      <h1 className="font-display text-[clamp(2rem,11vw,3rem)] font-extrabold leading-[0.95] mb-4">
+        Inloggen
+      </h1>
+      <p className="text-sm sm:text-base text-brand-muted mb-8">
         We sturen je een magische link — geen wachtwoord nodig.
       </p>
 
       {sent ? (
-        <p className="text-sm bg-brand-surface p-6 rounded border border-brand-text/10">
+        <p className="text-sm bg-brand-bg p-5 sm:p-6 rounded-lg border border-brand-text/10 break-words">
           Check je mail — we hebben een link gestuurd naar <strong>{email}</strong>.
         </p>
       ) : (
@@ -90,11 +93,11 @@ function SignInBlock({
             placeholder="jij@voorbeeld.nl"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="bg-brand-surface border border-brand-text/15 px-4 py-3 rounded text-sm focus:outline-none focus:border-brand-accent"
+            className="w-full min-w-0 bg-brand-bg border border-brand-text/15 px-4 py-3.5 rounded text-sm focus:outline-none focus:border-brand-accent"
           />
           <button
             type="submit"
-            className="bg-brand-accent text-white px-6 py-3 text-xs font-bold uppercase tracking-widest hover:glow-accent transition"
+            className="w-full min-h-12 bg-brand-accent text-white px-6 py-3 text-xs font-bold uppercase tracking-widest hover:glow-accent transition rounded"
           >
             Stuur inloglink
           </button>
@@ -155,18 +158,18 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
   const visitCount = visiblePastBookings.filter((booking) => booking.status === "confirmed").length;
 
   return (
-    <div className="grid gap-10">
-      <header className="flex justify-between items-start flex-wrap gap-4">
-        <div>
+    <div className="grid gap-8 sm:gap-10 min-w-0">
+      <header className="bg-brand-surface border border-brand-text/10 rounded-lg p-5 sm:p-6 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-5 min-w-0">
+        <div className="min-w-0">
           <p className="text-xs uppercase tracking-widest text-brand-muted">Welkom terug</p>
-          <h1 className="font-display text-4xl font-extrabold tracking-tighter">
+          <h1 className="font-display text-[clamp(2rem,10vw,3.5rem)] font-extrabold leading-[0.95] break-words">
             {customer.full_name}
           </h1>
           <p className="text-sm text-brand-muted mt-1">Je bent {visitCount} keer geweest</p>
         </div>
         <button
           onClick={onSignOut}
-          className="text-xs font-bold uppercase tracking-widest border border-brand-text/20 px-4 py-2 rounded"
+          className="w-full sm:w-auto min-h-11 text-xs font-bold uppercase tracking-widest border border-brand-text/20 px-4 py-2 rounded hover:border-brand-accent hover:text-brand-accent transition"
         >
           Uitloggen
         </button>
@@ -174,7 +177,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
 
       {/* Upcoming */}
       <section>
-        <h2 className="font-display text-2xl font-bold mb-4">Aankomende afspraken</h2>
+        <h2 className="font-display text-2xl sm:text-3xl font-bold mb-4">Aankomende afspraken</h2>
         {upcomingCount === 0 ? (
           <EmptyState title="Geen aankomende afspraken." />
         ) : (
@@ -182,19 +185,19 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
             {upcoming_bookings.map((b) => (
               <div
                 key={b.id}
-                className="bg-brand-surface border border-brand-text/10 rounded p-5 flex flex-col md:flex-row justify-between gap-3"
+                className="bg-brand-surface border border-brand-text/10 rounded-lg p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0"
               >
-                <div>
-                  <p className="font-display text-lg">{b.service_name}</p>
+                <div className="min-w-0">
+                  <p className="font-display text-xl break-words">{b.service_name}</p>
                   <p className="text-sm text-brand-muted">{dutchDate(b.starts_at)}</p>
                   <p className="text-xs text-brand-muted mt-1">
                     Nog te betalen in de zaak: {euros(b.remaining_cents)}
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="grid grid-cols-2 sm:flex gap-2">
                   <button
                     onClick={() => (window.location.href = `/annuleer?booking=${encodeURIComponent(b.id)}`)}
-                    className="border border-brand-text/20 px-3 py-2 text-[10px] font-bold uppercase tracking-widest"
+                    className="min-h-11 rounded border border-brand-text/20 px-3 py-2 text-[10px] font-bold uppercase tracking-widest hover:border-brand-accent hover:text-brand-accent transition"
                   >
                     Verzetten
                   </button>
@@ -214,7 +217,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
                         toast.error(dutchError(e));
                       }
                     }}
-                    className="border border-brand-text/20 px-3 py-2 text-[10px] font-bold uppercase tracking-widest"
+                    className="min-h-11 rounded border border-brand-text/20 px-3 py-2 text-[10px] font-bold uppercase tracking-widest hover:border-red-500 hover:text-red-500 transition"
                   >
                     Annuleren
                   </button>
@@ -227,7 +230,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
 
       {/* Credit */}
       {credit_cents > 0 && (
-        <section className="bg-brand-accent text-white p-5 rounded">
+        <section className="bg-brand-accent text-white p-5 sm:p-6 rounded-lg">
           <p className="text-xs uppercase tracking-widest opacity-80">Tegoed</p>
           <p className="text-2xl font-bold font-display">{euros(credit_cents)}</p>
           <p className="text-xs opacity-80 mt-1">
@@ -238,18 +241,21 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
 
       {/* History */}
       <section>
-        <h2 className="font-display text-2xl font-bold mb-4">Bezoekhistorie</h2>
+        <h2 className="font-display text-2xl sm:text-3xl font-bold mb-4">Bezoekhistorie</h2>
         {pastCount === 0 ? (
           <EmptyState title="Nog geen bezoeken." />
         ) : (
-          <ul className="divide-y divide-brand-text/10 border border-brand-text/10 rounded bg-brand-surface">
+          <ul className="divide-y divide-brand-text/10 border border-brand-text/10 rounded-lg bg-brand-surface overflow-hidden">
             {visiblePastBookings.map((b) => (
-              <li key={b.id} className="p-4 flex justify-between items-center gap-4">
-                <div>
-                  <p className="text-sm font-medium">{b.service_name}</p>
+              <li
+                key={b.id}
+                className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 min-w-0"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium break-words">{b.service_name}</p>
                   <p className="text-xs text-brand-muted">{dutchDateShort(b.starts_at)}</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="text-[10px] uppercase tracking-widest text-brand-muted">
                     {bookingStatusLabel(b.status)}
                   </span>
@@ -270,7 +276,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
 
       {/* Orders */}
       <section>
-        <h2 className="font-display text-2xl font-bold mb-4">Bestellingen</h2>
+        <h2 className="font-display text-2xl sm:text-3xl font-bold mb-4">Bestellingen</h2>
         {orderCount === 0 ? (
           <EmptyState title="Nog geen bestellingen." />
         ) : (
@@ -278,15 +284,15 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
             {orders.map((o) => (
               <div
                 key={o.id}
-                className="bg-brand-surface border border-brand-text/10 rounded p-4 flex justify-between items-center gap-3"
+                className="bg-brand-surface border border-brand-text/10 rounded-lg p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 min-w-0"
               >
-                <div>
-                  <p className="text-sm">{o.items_summary}</p>
+                <div className="min-w-0">
+                  <p className="text-sm break-words">{o.items_summary}</p>
                   <p className="text-xs text-brand-muted">
                     {dutchDateShort(o.created_at)} · {euros(o.total_cents)}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="text-[10px] uppercase tracking-widest">
                     {o.status === "paid" && "Betaald"}
                     {o.status === "ready_for_pickup" && "Klaar voor afhalen 📦"}
@@ -319,15 +325,18 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
 
       {/* Reviews */}
       <section>
-        <h2 className="font-display text-2xl font-bold mb-4">Mijn reviews</h2>
+        <h2 className="font-display text-2xl sm:text-3xl font-bold mb-4">Mijn reviews</h2>
         {reviewCount === 0 ? (
           <EmptyState title="Nog geen reviews geschreven." />
         ) : (
           <div className="grid gap-3">
             {reviews.map((r, i) => (
-              <div key={i} className="bg-brand-surface border border-brand-text/10 rounded p-4">
-                <div className="flex justify-between items-start">
-                  <div>
+              <div
+                key={i}
+                className="bg-brand-surface border border-brand-text/10 rounded-lg p-4 min-w-0"
+              >
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                  <div className="min-w-0">
                     <p className="text-sm font-medium">{r.service_name}</p>
                     <StarRating value={r.rating} readOnly size={14} />
                   </div>
@@ -335,7 +344,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
                     {r.is_visible ? "Gepubliceerd ✓" : "In behandeling"}
                   </span>
                 </div>
-                <p className="text-sm text-brand-muted mt-2">{r.body}</p>
+                <p className="text-sm text-brand-muted mt-2 break-words">{r.body}</p>
               </div>
             ))}
           </div>
@@ -349,7 +358,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
         onUpdated={() => qc.invalidateQueries({ queryKey: ["account"] })}
       />
 
-      <section>
+      <section className="bg-brand-surface border border-red-500/20 rounded-lg p-4 sm:p-5">
         <button
           onClick={async () => {
             if (
@@ -367,7 +376,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
               toast.error(dutchError(e));
             }
           }}
-          className="text-xs text-red-600 underline"
+          className="w-full sm:w-auto min-h-11 text-xs text-red-500 font-bold uppercase tracking-widest underline underline-offset-4"
         >
           Verwijder mijn gegevens
         </button>
@@ -411,20 +420,20 @@ function NotificationPrefs({
 
   return (
     <section>
-      <h2 className="font-display text-2xl font-bold mb-4">Notificatievoorkeuren</h2>
-      <div className="bg-brand-surface border border-brand-text/10 rounded p-5 grid gap-4">
+      <h2 className="font-display text-2xl sm:text-3xl font-bold mb-4">Notificatievoorkeuren</h2>
+      <div className="bg-brand-surface border border-brand-text/10 rounded-lg p-4 sm:p-5 grid gap-4 min-w-0">
         {!phone && (
           <div className="grid gap-2">
             <label className="text-xs uppercase tracking-widest text-brand-muted">
               Telefoon voor WhatsApp
             </label>
-            <div className="flex gap-2">
+            <div className="grid gap-2 sm:flex">
               <input
                 type="tel"
                 placeholder="+31612345678"
                 value={newPhone}
                 onChange={(e) => setNewPhone(e.target.value)}
-                className="flex-1 bg-brand-bg border border-brand-text/15 px-3 py-2 rounded text-sm"
+                className="w-full min-w-0 flex-1 bg-brand-bg border border-brand-text/15 px-3 py-3 rounded text-sm"
               />
               <button
                 onClick={async () => {
@@ -436,7 +445,7 @@ function NotificationPrefs({
                     toast.error(dutchError(e));
                   }
                 }}
-                className="bg-brand-accent text-white px-4 py-2 text-xs font-bold uppercase tracking-widest"
+                className="w-full sm:w-auto min-h-11 bg-brand-accent text-white px-4 py-2 text-xs font-bold uppercase tracking-widest rounded"
               >
                 Opslaan
               </button>
@@ -444,10 +453,10 @@ function NotificationPrefs({
           </div>
         )}
         <label
-          className={`flex justify-between items-center ${phone ? "" : "opacity-60"}`}
+          className={`flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 rounded border border-brand-text/10 bg-brand-bg/40 p-3 ${phone ? "" : "opacity-60"}`}
           title={phone ? undefined : "Vul je telefoonnummer in"}
         >
-          <span>WhatsApp-berichten</span>
+          <span className="text-sm">WhatsApp-berichten</span>
           <input
             type="checkbox"
             disabled={!phone}
@@ -458,8 +467,8 @@ function NotificationPrefs({
             }}
           />
         </label>
-        <label className="flex justify-between items-center">
-          <span>Nieuwsbrief en aanbiedingen</span>
+        <label className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 rounded border border-brand-text/10 bg-brand-bg/40 p-3">
+          <span className="text-sm">Nieuwsbrief en aanbiedingen</span>
           <input
             type="checkbox"
             checked={mk}

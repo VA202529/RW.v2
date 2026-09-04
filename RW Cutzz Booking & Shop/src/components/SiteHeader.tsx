@@ -19,12 +19,15 @@ export function SiteHeader() {
 
   return (
     <header className="fixed top-0 w-full z-40 border-b border-brand-text/10 bg-brand-bg/85 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-6 h-16 md:h-20 flex items-center justify-between">
-        <Link to="/" className="font-display text-xl md:text-2xl font-extrabold tracking-tighter">
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 md:px-8 gap-3 md:gap-4 h-16 md:h-[4.5rem] lg:h-20 flex items-center justify-between">
+        <Link
+          to="/"
+          className="font-display text-xl md:text-[1.375rem] lg:text-2xl font-extrabold tracking-tighter whitespace-nowrap shrink-0"
+        >
           RW <span className="text-brand-accent">CUTZZ</span>
         </Link>
 
-        <nav className="hidden md:flex gap-8 text-sm font-medium tracking-widest uppercase">
+        <nav className="hidden md:flex gap-4 lg:gap-5 xl:gap-8 text-[11px] lg:text-xs xl:text-sm whitespace-nowrap font-medium tracking-widest uppercase">
           {links.map((l) => (
             <Link
               key={l.to}
@@ -38,7 +41,7 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2 shrink-0">
           <button
             onClick={openDrawer}
             aria-label="Winkelwagen openen"
@@ -60,7 +63,7 @@ export function SiteHeader() {
           </Link>
           <Link
             to="/boeken"
-            className="hidden md:inline-flex bg-brand-accent text-white px-5 py-2.5 text-xs font-bold uppercase tracking-widest hover:glow-accent transition-all"
+            className="hidden lg:inline-flex whitespace-nowrap bg-brand-accent text-white px-4 xl:px-5 py-2.5 text-[11px] xl:text-xs font-bold uppercase tracking-widest hover:glow-accent transition-all rounded"
           >
             Boek nu
           </Link>
@@ -86,7 +89,7 @@ export function SiteHeader() {
             <Link
               to="/boeken"
               onClick={() => setOpen(false)}
-              className="bg-brand-accent text-white px-5 py-3 text-xs font-bold uppercase tracking-widest text-center"
+              className="bg-brand-accent text-white px-5 py-3 text-xs font-bold uppercase tracking-widest text-center rounded"
             >
               Boek nu
             </Link>

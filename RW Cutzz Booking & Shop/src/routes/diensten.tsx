@@ -35,56 +35,68 @@ function Diensten() {
   });
 
   return (
-    <div className="min-h-screen bg-brand-bg text-brand-text flex flex-col">
+    <div className="min-h-screen bg-brand-bg text-brand-text flex flex-col overflow-x-hidden">
       <SiteHeader />
-      <section className="pt-28 pb-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <p className="text-brand-accent text-xs font-bold tracking-[0.3em] uppercase mb-3">
+      <section className="pt-28 md:pt-32 lg:pt-36 pb-8 md:pb-10 px-5 sm:px-6 md:px-8">
+        <div className="max-w-7xl mx-auto">
+          <p className="text-brand-accent text-[10px] sm:text-xs font-bold tracking-[0.25em] uppercase mb-3">
             Diensten
           </p>
-          <h1 className="font-display text-5xl md:text-6xl font-extrabold tracking-tighter">
+          <h1 className="font-display font-extrabold tracking-tight leading-[1.05] text-[clamp(1.9rem,6vw,3.75rem)] text-balance max-w-[18ch]">
             Barberdiensten in Amsterdam-Noord
           </h1>
-          <p className="mt-6 max-w-2xl text-brand-muted">
+          <p className="mt-4 max-w-xl text-brand-muted text-sm sm:text-base leading-relaxed">
             RW CUTZZ biedt strakke cuts, baardverzorging, kids knippen en design lines. Je boekt
             online en betaalt vooraf alleen de aanbetaling.
           </p>
+        </div>
+      </section>
 
+      <section className="flex-1 pb-16 md:pb-20 px-5 sm:px-6 md:px-8">
+        <div className="max-w-7xl mx-auto">
           {isLoading ? (
-            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="h-56 bg-brand-surface animate-pulse rounded" />
+            <div className="grid gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={index} className="h-52 bg-brand-surface animate-pulse rounded-lg" />
               ))}
             </div>
           ) : services.length === 0 ? (
-            <div className="mt-10">
-              <EmptyState title="Geen actieve diensten gevonden." />
-            </div>
+            <EmptyState title="Geen actieve diensten gevonden." />
           ) : (
-            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-5 md:gap-6 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
               {services.map((service) => (
                 <article
                   key={service.id}
-                  className="bg-brand-surface border border-brand-text/10 rounded p-6"
+                  className="w-full min-w-0 bg-brand-surface border border-brand-text/10 rounded-lg p-5 sm:p-6 flex flex-col gap-3"
                 >
-                  <h2 className="font-display text-2xl">{service.name}</h2>
-                  <p className="mt-3 text-sm text-brand-muted">{service.description}</p>
-                  <div className="mt-5 border-t border-brand-text/10 pt-4 text-sm">
-                    <p className="font-bold text-brand-accent">
-                      {centsToPrice(service.price_cents)}
-                    </p>
-                    <p className="mt-1 text-brand-muted">
-                      Aanbetaling {centsToPrice(serviceDepositCents(service))}
-                    </p>
-                    <p className="mt-1 text-brand-muted">{service.duration_minutes} min</p>
+                  <div className="flex justify-between items-start gap-3">
+                    <h2 className="min-w-0 break-words font-display text-lg sm:text-xl leading-tight">
+                      {service.name}
+                    </h2>
+                    <span className="shrink-0 text-[11px] bg-brand-bg px-2 py-1 rounded text-brand-muted">
+                      {service.duration_minutes} min
+                    </span>
                   </div>
-                  <Link
-                    to="/boeken"
-                    search={{ service: service.id }}
-                    className="mt-5 inline-flex bg-brand-accent text-white px-5 py-3 text-xs font-bold uppercase tracking-widest hover:glow-accent transition"
-                  >
-                    Boek deze dienst
-                  </Link>
+                  <p className="min-w-0 break-words text-sm text-brand-muted flex-1">
+                    {service.description}
+                  </p>
+                  <div className="flex flex-wrap items-end gap-3 justify-between pt-3 border-t border-brand-text/10">
+                    <div>
+                      <p className="text-2xl font-bold font-display text-brand-accent">
+                        {centsToPrice(service.price_cents)}
+                      </p>
+                      <p className="text-[11px] text-brand-muted">
+                        Aanbetaling {centsToPrice(serviceDepositCents(service))}
+                      </p>
+                    </div>
+                    <Link
+                      to="/boeken"
+                      search={{ service: service.id }}
+                      className="border border-brand-accent px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-brand-accent hover:text-white transition"
+                    >
+                      Boek direct
+                    </Link>
+                  </div>
                 </article>
               ))}
             </div>

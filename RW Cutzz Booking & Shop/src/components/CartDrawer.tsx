@@ -26,25 +26,38 @@ export function CartDrawer() {
 
   return (
     <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-black/50" onClick={closeDrawer} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closeDrawer} />
       <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-brand-bg flex flex-col shadow-2xl">
-        <div className="p-6 border-b border-brand-text/10 flex justify-between items-center">
+        <div className="p-5 sm:p-6 border-b border-brand-text/10 flex justify-between items-center">
           <h2 className="font-display text-2xl font-extrabold">Winkelwagen</h2>
-          <button onClick={closeDrawer} aria-label="Sluiten">
+          <button
+            onClick={closeDrawer}
+            aria-label="Sluiten"
+            className="min-h-10 min-w-10 inline-flex items-center justify-center rounded border border-brand-text/10 hover:border-brand-accent hover:text-brand-accent transition"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6">
           {count === 0 ? (
-            <p className="text-sm text-brand-muted text-center py-16">
-              Je winkelwagen is leeg.
-            </p>
+            <p className="text-sm text-brand-muted text-center py-16">Je winkelwagen is leeg.</p>
           ) : (
             <ul className="grid gap-4">
               {lines.map((l) => (
-                <li key={l.product_id} className="flex gap-3 bg-brand-surface p-3 rounded">
-                  <div className="w-16 h-16 bg-brand-bg rounded flex items-center justify-center text-xs text-brand-muted">
-                    IMG
+                <li
+                  key={l.product_id}
+                  className="flex gap-3 bg-brand-surface border border-brand-text/10 p-3 rounded-lg"
+                >
+                  <div className="w-16 h-16 shrink-0 bg-brand-bg rounded flex items-center justify-center overflow-hidden text-xs text-brand-muted">
+                    {l.product.image_paths?.[0] ? (
+                      <img
+                        src={l.product.image_paths[0]}
+                        alt={l.product.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      "IMG"
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{l.product.name}</p>
@@ -52,7 +65,8 @@ export function CartDrawer() {
                     <div className="mt-2 flex items-center gap-2">
                       <button
                         onClick={() => setQty(l.product_id, l.quantity - 1)}
-                        className="w-7 h-7 border border-brand-text/15 rounded"
+                        className="w-8 h-8 border border-brand-text/15 rounded hover:border-brand-accent hover:text-brand-accent transition"
+                        aria-label="Aantal verlagen"
                       >
                         −
                       </button>
@@ -60,7 +74,8 @@ export function CartDrawer() {
                       <button
                         onClick={() => setQty(l.product_id, l.quantity + 1)}
                         disabled={l.quantity >= l.product.stock}
-                        className="w-7 h-7 border border-brand-text/15 rounded disabled:opacity-40"
+                        className="w-8 h-8 border border-brand-text/15 rounded disabled:opacity-40 hover:border-brand-accent hover:text-brand-accent transition"
+                        aria-label="Aantal verhogen"
                       >
                         +
                       </button>
@@ -82,7 +97,7 @@ export function CartDrawer() {
           )}
         </div>
         {count > 0 && (
-          <div className="p-6 border-t border-brand-text/10 space-y-3">
+          <div className="p-5 sm:p-6 border-t border-brand-text/10 space-y-3 bg-brand-bg/95">
             <div className="flex justify-between text-sm">
               <span className="text-brand-muted">Totaal</span>
               <span className="font-bold">{euros(total)}</span>
@@ -90,7 +105,7 @@ export function CartDrawer() {
             <Link
               to="/winkel/checkout"
               onClick={closeDrawer}
-              className="block text-center bg-brand-accent text-white px-6 py-3 text-xs font-bold uppercase tracking-widest hover:glow-accent transition"
+              className="block text-center bg-brand-accent text-white px-6 py-3 text-xs font-bold uppercase tracking-widest rounded hover:glow-accent transition"
             >
               Afrekenen ({euros(total)})
             </Link>

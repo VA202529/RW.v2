@@ -46,9 +46,9 @@
 
   --brand-bg: #f0f7ff;
   --brand-surface: #ffffff;
-  --brand-accent: #2B3BEF;
+  --brand-accent: #2b3bef;
   --brand-accent-glow: rgba(43, 59, 239, 0.45);
-  --brand-dark: #0C0C0E;
+  --brand-dark: #0c0c0e;
   --brand-text: #0b1e3a;
   --brand-muted: #64748b;
 
@@ -58,19 +58,19 @@
   --card-foreground: #0b1e3a;
   --popover: #ffffff;
   --popover-foreground: #0b1e3a;
-  --primary: #2B3BEF;
+  --primary: #2b3bef;
   --primary-foreground: #ffffff;
   --secondary: #dbeafe;
   --secondary-foreground: #0b1e3a;
   --muted: #e0ecff;
   --muted-foreground: #64748b;
-  --accent: #2B3BEF;
+  --accent: #2b3bef;
   --accent-foreground: #ffffff;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: #ffffff;
   --border: rgba(11, 30, 58, 0.1);
   --input: rgba(11, 30, 58, 0.15);
-  --ring: #2B3BEF;
+  --ring: #2b3bef;
 }
 
 @utility glow-accent {
@@ -78,7 +78,9 @@
 }
 
 @utility glow-accent-lg {
-  box-shadow: 0 0 48px var(--brand-accent-glow), 0 0 16px var(--brand-accent-glow);
+  box-shadow:
+    0 0 48px var(--brand-accent-glow),
+    0 0 16px var(--brand-accent-glow);
 }
 
 @layer base {
@@ -88,6 +90,8 @@
 
   html,
   body {
+    max-width: 100%;
+    overflow-x: hidden;
     background-color: var(--color-brand-bg);
     color: var(--color-brand-text);
     font-family: var(--font-sans);

@@ -70,8 +70,8 @@ export const Route = createFileRoute("/voorwaarden")({
 
         <h2 className="font-display text-xl mt-6 mb-2">Artikel 8 - Website en ontwikkeling</h2>
         <p className="text-brand-muted">
-          De website van RWCUTZZ is https://rwcutzz.com. De website is ontwikkeld door Van Appiah,
-          https://vanappiah.com.
+          De website van RWCUTZZ is https://rwcutzz.com. De website is ontwikkeld door Geheel
+          Digitaal, https://geheeldigitaal.nl/.
         </p>
 
         <h2 className="font-display text-xl mt-6 mb-2">Artikel 9 - Toepasselijk recht</h2>
