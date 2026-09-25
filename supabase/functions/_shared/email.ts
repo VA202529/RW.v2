@@ -16,6 +16,7 @@ import { platform_invoice } from "./emails/platform_invoice.tsx";
 import { order_cancelled } from "./emails/order_cancelled.tsx";
 import { monthly_invoice } from "./emails/monthly_invoice.tsx";
 import { admin_booking_notification } from "./emails/admin_booking_notification.tsx";
+import { adminBookingPushPayload, sendAdminPush } from "./push.ts";
 
 const templates: Record<string, (data: Record<string, any>) => any> = {
   booking_confirmation,
@@ -106,8 +107,9 @@ export async function sendTransactionalEmailOnce(input: {
 
 export async function sendAdminBookingNotificationOnce(data: Record<string, any>) {
   if (!data?.booking_id || !data?.customer_id) return { ok: false, error: "missing_booking_notification_data" };
+  let emailResult: unknown = null;
   try {
-    return await sendTransactionalEmailOnce({
+    emailResult = await sendTransactionalEmailOnce({
       template: "admin_booking_notification",
       to: "dgrbeats.1@gmail.com",
       customer_id: data.customer_id,
@@ -116,8 +118,14 @@ export async function sendAdminBookingNotificationOnce(data: Record<string, any>
     });
   } catch (error) {
     console.error("admin booking notification failed", error);
-    return { ok: false, error };
+    emailResult = { ok: false, error };
   }
+  try {
+    await sendAdminPush(adminBookingPushPayload(data), data.booking_id);
+  } catch (error) {
+    console.error("admin booking push failed", error);
+  }
+  return emailResult;
 }
 
 function renderEmailHtml(html: unknown) {
