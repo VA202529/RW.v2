@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="RW">
-  <rect width="64" height="64" rx="14" fill="#0f172a"/>
-  <path d="M15 16h9l6 19 6-19h8l6 19 6-19h8L59 48h-8l-7-21-7 21h-8L15 16Z" fill="#f8fafc"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="RW CUTZZ favicon">
+  <rect width="64" height="64" rx="12" fill="#0b0b0d"/>
+  <path d="M9 16h13c7 0 12 4 12 10 0 4-2 7-6 9l8 13H25l-7-12h-2v12H9V16Zm7 7v7h6c3 0 5-1 5-4s-2-3-5-3h-6Zm17-7h8l5 19 6-19h8L50 48h-8l-5-18-5 18h-8l9-32Z" fill="#f7efe2"/>
+  <path d="M8 55h48" stroke="#c7a35b" stroke-width="3" stroke-linecap="round"/>
 </svg>
