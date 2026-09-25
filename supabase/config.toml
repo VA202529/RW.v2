@@ -15,3 +15,6 @@ verify_jwt = false
 
 [functions.account-data]
 verify_jwt = false
+
+[functions.get-public-reviews]
+verify_jwt = false

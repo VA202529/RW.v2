@@ -9,7 +9,7 @@ Deno.serve(async (req) => {
   const options = handleOptions(req);
   if (options) return options;
   const userId = await requireAdmin(req);
-  if (!userId) return json({ code: "FORBIDDEN" }, 403);
+  if (!userId) return json({ code: "FORBIDDEN" }, 403, {}, req);
   try {
     const { title, body } = await req.json();
     const supabase = serviceClient();
@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     const recipients = prepared.recipients ?? [];
     const from = Deno.env.get("RESEND_FROM_EMAIL");
     const key = Deno.env.get("RESEND_API_KEY");
-    if (!from || !key) return json({ code: "MISSING_EMAIL_CONFIG" }, 500);
+    if (!from || !key) return json({ code: "MISSING_EMAIL_CONFIG" }, 500, {}, req);
     const rendered = announcement({ title, body });
     const html = await render(rendered.html);
     const resend = new Resend(key);
@@ -35,9 +35,9 @@ Deno.serve(async (req) => {
       status: sendError ? "failed" : "sent",
     }));
     await supabase.rpc("wp3_log_broadcast", { p_auth_user_id: userId, p_template: "announcement", p_results: results });
-    return json({ sent: sendError ? 0 : recipients.length, failed: sendError ? recipients.length : 0 });
+    return json({ sent: sendError ? 0 : recipients.length, failed: sendError ? recipients.length : 0 }, 200, {}, req);
   } catch (error) {
     console.error(error);
-    return json({ code: "SERVER_ERROR" }, 500);
+    return json({ code: "SERVER_ERROR" }, 500, {}, req);
   }
 });
