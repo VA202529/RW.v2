@@ -411,7 +411,7 @@ function Step2({
           <p className="text-xs uppercase tracking-widest text-brand-muted">Tijd</p>
           {slot && (
             <span className="text-xs text-brand-muted">
-              {format(new Date(date), "EEEE d MMMM", { locale: nl })}
+              {format(parseLocalDate(date), "EEEE d MMMM", { locale: nl })}
             </span>
           )}
         </div>
