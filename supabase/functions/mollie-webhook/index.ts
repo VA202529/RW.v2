@@ -1,7 +1,7 @@
 import { noStoreJson } from "../_shared/http.ts";
 import { mollieMode, mollieRequest, mollieValueToCents, type MolliePayment } from "../_shared/mollie.ts";
 import { serviceClient } from "../_shared/supabase.ts";
-import { sendTransactionalEmail } from "../_shared/email.ts";
+import { sendAdminBookingNotificationOnce, sendTransactionalEmail } from "../_shared/email.ts";
 import { bodyComponent, cents, dateParts, firstName, sendWhatsAppTemplate } from "../_shared/whatsapp.ts";
 
 const PAYMENT_ID_PATTERN = /^tr_[A-Za-z0-9]{5,64}$/;
@@ -117,6 +117,7 @@ async function sendConfirmationIfNeeded(supabase: ReturnType<typeof serviceClien
     booking_id: bookingId,
     data: details,
   });
+  await sendAdminBookingNotificationOnce(details);
 
   if (!details.auth_user_id) {
     const { data: shouldSendMagicLink } = await supabase.rpc("wp3_should_send_magic_link", {
@@ -144,7 +145,7 @@ async function sendConfirmationIfNeeded(supabase: ReturnType<typeof serviceClien
 async function bookingDetails(supabase: ReturnType<typeof serviceClient>, bookingId: string) {
   const { data, error } = await supabase
     .from("bookings")
-    .select("id,starts_at,ends_at,deposit_cents,customers(id,email,auth_user_id,full_name,phone_e164,notification_prefs(whatsapp_opt_in)),services(name,price_cents)")
+    .select("id,starts_at,ends_at,deposit_cents,customers(id,email,auth_user_id,full_name,phone_e164,notification_prefs(whatsapp_opt_in)),services(name,price_cents,duration_minutes)")
     .eq("id", bookingId)
     .single();
   if (error || !data) return null;
@@ -161,7 +162,9 @@ async function bookingDetails(supabase: ReturnType<typeof serviceClient>, bookin
     service_name: service.name,
     starts_at: data.starts_at,
     ends_at: data.ends_at,
+    duration_minutes: service.duration_minutes,
     deposit_cents: data.deposit_cents,
+    price_cents: service.price_cents,
     remaining_cents: Math.max((service.price_cents ?? 0) - data.deposit_cents, 0),
   };
 }

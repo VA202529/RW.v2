@@ -1,7 +1,7 @@
 import { handleOptions, json } from "../_shared/http.ts";
 import { serviceClient } from "../_shared/supabase.ts";
 import { APPLICATION_FEE_CENTS, connectedAccount, stripeClient } from "../_shared/stripe.ts";
-import { sendTransactionalEmail } from "../_shared/email.ts";
+import { sendAdminBookingNotificationOnce, sendTransactionalEmail } from "../_shared/email.ts";
 import { bodyComponent, cents, dateParts, firstName, sendWhatsAppTemplate } from "../_shared/whatsapp.ts";
 
 Deno.serve(async (req) => {
@@ -34,6 +34,7 @@ Deno.serve(async (req) => {
         booking_id: data.booking_id,
         data: { ...data, cancel_token: cancellation_token },
       });
+      await sendAdminBookingNotificationOnce(details ?? data);
       return json({ confirmed: true, booking_id: data.booking_id }, 200, {}, req);
     }
 
@@ -82,12 +83,23 @@ Deno.serve(async (req) => {
 });
 
 async function bookingDetails(supabase: ReturnType<typeof serviceClient>, bookingId: string) {
-  const { data } = await supabase.from("bookings").select("id,customers(full_name,phone_e164,notification_prefs(whatsapp_opt_in))").eq("id", bookingId).single();
+  const { data } = await supabase.from("bookings").select("id,starts_at,ends_at,deposit_cents,customers(id,email,full_name,phone_e164,notification_prefs(whatsapp_opt_in)),services(name,price_cents,duration_minutes)").eq("id", bookingId).single();
   if (!data) return null;
   const customer = Array.isArray(data.customers) ? data.customers[0] : data.customers;
+  const service = Array.isArray(data.services) ? data.services[0] : data.services;
   return {
+    booking_id: data.id,
+    customer_id: customer.id,
+    customer_email: customer.email,
     customer_name: customer.full_name,
     phone_e164: customer.phone_e164,
     whatsapp_opt_in: Boolean(Array.isArray(customer.notification_prefs) ? customer.notification_prefs[0]?.whatsapp_opt_in : customer.notification_prefs?.whatsapp_opt_in),
+    service_name: service.name,
+    starts_at: data.starts_at,
+    ends_at: data.ends_at,
+    duration_minutes: service.duration_minutes,
+    deposit_cents: data.deposit_cents,
+    price_cents: service.price_cents,
+    remaining_cents: Math.max((service.price_cents ?? 0) - data.deposit_cents, 0),
   };
 }

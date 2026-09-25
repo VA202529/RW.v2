@@ -8,7 +8,7 @@ import {
 import { serviceClient } from "../_shared/supabase.ts";
 import { decryptToken, readMollieToken } from "../_shared/crypto.ts";
 import { corsHeaders as getCorsHeaders } from "../_shared/http.ts";
-import { sendTransactionalEmail } from "../_shared/email.ts";
+import { sendAdminBookingNotificationOnce, sendTransactionalEmail } from "../_shared/email.ts";
 import { bodyComponent, cents, dateParts, firstName, sendWhatsAppTemplate } from "../_shared/whatsapp.ts";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -240,12 +240,13 @@ async function sendBookingConfirmation(supabase: ReturnType<typeof serviceClient
     booking_id: bookingId,
     data: { ...details, cancel_token: cancellationToken },
   });
+  await sendAdminBookingNotificationOnce(details);
 }
 
 async function bookingDetails(supabase: ReturnType<typeof serviceClient>, bookingId: string) {
   const { data, error } = await supabase
     .from("bookings")
-    .select("id,starts_at,ends_at,deposit_cents,customers(id,email,full_name,phone_e164,notification_prefs(whatsapp_opt_in)),services(name,price_cents)")
+    .select("id,starts_at,ends_at,deposit_cents,customers(id,email,full_name,phone_e164,notification_prefs(whatsapp_opt_in)),services(name,price_cents,duration_minutes)")
     .eq("id", bookingId)
     .single();
   if (error || !data) return null;
@@ -261,7 +262,9 @@ async function bookingDetails(supabase: ReturnType<typeof serviceClient>, bookin
     service_name: service.name,
     starts_at: data.starts_at,
     ends_at: data.ends_at,
+    duration_minutes: service.duration_minutes,
     deposit_cents: data.deposit_cents,
+    price_cents: service.price_cents,
     remaining_cents: Math.max((service.price_cents ?? 0) - data.deposit_cents, 0),
   };
 }

@@ -15,6 +15,7 @@ import { announcement } from "./emails/announcement.tsx";
 import { platform_invoice } from "./emails/platform_invoice.tsx";
 import { order_cancelled } from "./emails/order_cancelled.tsx";
 import { monthly_invoice } from "./emails/monthly_invoice.tsx";
+import { admin_booking_notification } from "./emails/admin_booking_notification.tsx";
 
 const templates: Record<string, (data: Record<string, any>) => any> = {
   booking_confirmation,
@@ -31,6 +32,7 @@ const templates: Record<string, (data: Record<string, any>) => any> = {
   platform_invoice,
   order_cancelled,
   monthly_invoice,
+  admin_booking_notification,
 };
 
 export async function sendTransactionalEmail(input: {
@@ -71,6 +73,51 @@ export async function sendTransactionalEmail(input: {
 
   await logMessage(supabase, input, "sent", data?.id);
   return { ok: true, id: data?.id };
+}
+
+export async function sendTransactionalEmailOnce(input: {
+  template: string;
+  to: string;
+  data?: Record<string, any>;
+  customer_id?: string;
+  booking_id?: string;
+  order_id?: string;
+}) {
+  const supabase = serviceClient();
+  let query = supabase
+    .from("message_log")
+    .select("id")
+    .eq("channel", "email")
+    .eq("template", input.template)
+    .in("status", ["queued", "sent", "delivered", "read"]);
+
+  if (input.booking_id ?? input.data?.booking_id) {
+    query = query.eq("booking_id", input.booking_id ?? input.data?.booking_id);
+  } else if (input.order_id ?? input.data?.order_id) {
+    query = query.eq("order_id", input.order_id ?? input.data?.order_id);
+  } else {
+    query = query.eq("customer_id", input.customer_id ?? input.data?.customer_id);
+  }
+
+  const { data } = await query.limit(1);
+  if ((data ?? []).length > 0) return { ok: true, skipped: true };
+  return sendTransactionalEmail(input);
+}
+
+export async function sendAdminBookingNotificationOnce(data: Record<string, any>) {
+  if (!data?.booking_id || !data?.customer_id) return { ok: false, error: "missing_booking_notification_data" };
+  try {
+    return await sendTransactionalEmailOnce({
+      template: "admin_booking_notification",
+      to: "dgrbeats.1@gmail.com",
+      customer_id: data.customer_id,
+      booking_id: data.booking_id,
+      data,
+    });
+  } catch (error) {
+    console.error("admin booking notification failed", error);
+    return { ok: false, error };
+  }
 }
 
 function renderEmailHtml(html: unknown) {
