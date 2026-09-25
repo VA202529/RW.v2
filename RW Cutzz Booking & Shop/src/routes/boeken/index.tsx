@@ -26,6 +26,15 @@ import { webPageJsonLd } from "@/seo/structured-data";
 const description =
   "Boek online een afspraak bij RW CUTZZ in Amsterdam-Noord voor knippen, baardtrimmen, kids cuts of design lines.";
 
+function parseLocalDate(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function localDateKey(date: Date) {
+  return format(date, "yyyy-MM-dd");
+}
+
 export const Route = createFileRoute("/boeken/")({
   validateSearch: (s: Record<string, unknown>) => ({
     service: typeof s.service === "string" ? s.service : undefined,
@@ -98,7 +107,7 @@ function Boeken() {
   const [state, dispatch] = useReducer(reducer, {
     step: 1,
     service_id: search.service,
-    date: new Date().toISOString().slice(0, 10),
+    date: localDateKey(new Date()),
   });
 
   const selectedService = services.find((s) => s.id === state.service_id);
@@ -295,7 +304,7 @@ function Step2({
   onNext: () => void;
 }) {
   const [monthCursor, setMonthCursor] = useState(() => {
-    const d = new Date(date);
+    const d = parseLocalDate(date);
     d.setDate(1);
     d.setHours(0, 0, 0, 0);
     return d;
@@ -371,7 +380,7 @@ function Step2({
           </div>
           <div className="grid grid-cols-7 gap-1">
             {calendarCells.map((d) => {
-              const key = d.toISOString().slice(0, 10);
+              const key = localDateKey(d);
               const active = key === date;
               const past = d < today;
               const otherMonth = d.getMonth() !== monthCursor.getMonth();
