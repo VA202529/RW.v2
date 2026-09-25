@@ -8,7 +8,7 @@ Deno.serve(async (req) => {
   if (options) return options;
 
   const userId = await requireAdmin(req);
-  if (!userId) return json({ code: "FORBIDDEN" }, 403);
+  if (!userId) return json({ code: "FORBIDDEN" }, 403, {}, req);
 
   const body = await req.json().catch(() => ({}));
   const action = body.action;
@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
   const supabase = serviceClient();
 
   if (action === "status") {
-    return json({ status: 200, vapid_public_key: publicKey });
+    return json({ status: 200, vapid_public_key: publicKey }, 200, {}, req);
   }
 
   if (action === "register") {
@@ -24,8 +24,8 @@ Deno.serve(async (req) => {
     const endpoint = subscription?.endpoint;
     const p256dh = subscription?.keys?.p256dh;
     const auth = subscription?.keys?.auth;
-    if (!publicKey) return json({ code: "MISSING_PUSH_CONFIG" }, 500);
-    if (!endpoint || !p256dh || !auth) return json({ code: "INVALID_SUBSCRIPTION" }, 400);
+    if (!publicKey) return json({ code: "MISSING_PUSH_CONFIG" }, 500, {}, req);
+    if (!endpoint || !p256dh || !auth) return json({ code: "INVALID_SUBSCRIPTION" }, 400, {}, req);
 
     const { error } = await supabase.from("admin_push_subscriptions").upsert(
       {
@@ -39,8 +39,8 @@ Deno.serve(async (req) => {
       },
       { onConflict: "endpoint" },
     );
-    if (error) return json({ code: "SERVER_ERROR", message: error.message }, 500);
-    return json({ status: 200 });
+    if (error) return json({ code: "SERVER_ERROR", message: error.message }, 500, {}, req);
+    return json({ status: 200 }, 200, {}, req);
   }
 
   if (action === "test") {
@@ -48,8 +48,8 @@ Deno.serve(async (req) => {
       .from("admin_push_subscriptions")
       .select("id, endpoint, p256dh, auth")
       .eq("admin_user_id", userId);
-    if (error) return json({ code: "SERVER_ERROR", message: error.message }, 500);
-    if (!subscriptions?.length) return json({ code: "NO_SUBSCRIPTION", message: "Meldingen zijn nog niet ingeschakeld op dit apparaat." }, 400);
+    if (error) return json({ code: "SERVER_ERROR", message: error.message }, 500, {}, req);
+    if (!subscriptions?.length) return json({ code: "NO_SUBSCRIPTION", message: "Meldingen zijn nog niet ingeschakeld op dit apparaat." }, 400, {}, req);
 
     let sent = 0;
     let failed = 0;
@@ -62,9 +62,9 @@ Deno.serve(async (req) => {
       if (result.ok) sent += 1;
       else failed += 1;
     }
-    if (sent < 1) return json({ code: "PUSH_FAILED", message: "Testmelding kon niet worden verstuurd." }, 500);
-    return json({ status: 200, sent, failed });
+    if (sent < 1) return json({ code: "PUSH_FAILED", message: "Testmelding kon niet worden verstuurd." }, 500, {}, req);
+    return json({ status: 200, sent, failed }, 200, {}, req);
   }
 
-  return json({ code: "BAD_REQUEST" }, 400);
+  return json({ code: "BAD_REQUEST" }, 400, {}, req);
 });
