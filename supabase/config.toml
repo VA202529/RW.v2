@@ -10,6 +10,9 @@ verify_jwt = false
 [functions.mollie-token-refresh]
 verify_jwt = true
 
+[functions.mollie-reconcile]
+verify_jwt = false
+
 [functions.admin-system-settings]
 verify_jwt = false
 
