@@ -31,11 +31,11 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
   if (value === null || value === undefined || value === "") return null;
   return (
     <tr>
-      <td style={{ padding: "10px 0", borderBottom: "1px solid #ece7dc" }}>
-        <p style={{ margin: "0 0 4px", fontSize: 12, lineHeight: "16px", color: "#7a715f", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0 }}>
+      <td style={{ padding: "11px 0", borderBottom: "1px solid #FFFFFF" }}>
+        <p style={{ margin: "0 0 4px", fontSize: 12, lineHeight: "16px", color: "#6B7280", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0 }}>
           {label}
         </p>
-        <p style={{ margin: 0, fontSize: 16, lineHeight: "22px", color: "#171717", fontWeight: 700 }}>
+        <p style={{ margin: 0, fontSize: 16, lineHeight: "22px", color: "#111827", fontWeight: 700 }}>
           {value}
         </p>
       </td>
@@ -56,40 +56,47 @@ export function admin_booking_notification(data: Record<string, any>): EmailRend
 
   const html = (
     <html lang="nl">
-      <body style={{ margin: 0, padding: 0, background: "#0b0b0b", fontFamily: "Arial, Helvetica, sans-serif", color: "#171717" }}>
-        <table width="100%" cellPadding="0" cellSpacing="0" role="presentation" style={{ background: "#0b0b0b" }}>
+      <body style={{ margin: 0, padding: 0, background: "#0B0C10", fontFamily: "Arial, Helvetica, sans-serif", color: "#111827" }}>
+        <table width="100%" cellPadding="0" cellSpacing="0" role="presentation" style={{ background: "#0B0C10" }}>
           <tbody>
             <tr>
               <td align="center" style={{ padding: "24px 12px" }}>
-                <table width="100%" cellPadding="0" cellSpacing="0" role="presentation" style={{ maxWidth: 560, width: "100%", background: "#ffffff", borderRadius: 14, overflow: "hidden" }}>
+                <table width="100%" cellPadding="0" cellSpacing="0" role="presentation" style={{ maxWidth: 560, width: "100%", background: "#FFFFFF", borderRadius: 14, overflow: "hidden" }}>
                   <tbody>
                     <tr>
-                      <td style={{ background: "#111111", padding: "22px 22px 18px", borderBottom: "4px solid #d6a619" }}>
-                        <p style={{ margin: 0, color: "#ffffff", fontSize: 24, lineHeight: "28px", fontWeight: 900, letterSpacing: 0 }}>
+                      <td style={{ background: "#0B0C10", padding: "22px 22px 18px", borderBottom: "4px solid #3A41F6" }}>
+                        <p style={{ margin: 0, color: "#FFFFFF", fontSize: 24, lineHeight: "28px", fontWeight: 900, letterSpacing: 0 }}>
                           RW CUTZZ
                         </p>
-                        <p style={{ margin: "12px 0 0", color: "#d6a619", fontSize: 13, lineHeight: "18px", fontWeight: 800, textTransform: "uppercase", letterSpacing: 0 }}>
+                        <table width="64" cellPadding="0" cellSpacing="0" role="presentation" style={{ marginTop: 12 }}>
+                          <tbody>
+                            <tr>
+                              <td style={{ height: 3, lineHeight: "3px", fontSize: 0, background: "#3A41F6" }}>&nbsp;</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <p style={{ margin: "18px 0 0", color: "#FFFFFF", fontSize: 22, lineHeight: "28px", fontWeight: 900, textTransform: "uppercase", letterSpacing: 0 }}>
                           Nieuwe afspraak
                         </p>
-                        <p style={{ margin: "4px 0 0", color: "#f6f1e6", fontSize: 15, lineHeight: "22px" }}>
+                        <p style={{ margin: "6px 0 0", color: "#9CA3AF", fontSize: 15, lineHeight: "22px" }}>
                           Er is een nieuwe afspraak geboekt.
                         </p>
                       </td>
                     </tr>
                     <tr>
                       <td style={{ padding: "22px" }}>
-                        <table width="100%" cellPadding="0" cellSpacing="0" role="presentation" style={{ background: "#fff9e8", border: "1px solid #ead79d", borderRadius: 12 }}>
+                        <table width="100%" cellPadding="0" cellSpacing="0" role="presentation" style={{ background: "#111827", border: "1px solid #1F2937", borderRadius: 12 }}>
                           <tbody>
                             <tr>
                               <td style={{ padding: "18px" }}>
-                                <p style={{ margin: "0 0 6px", color: "#7a5a00", fontSize: 12, lineHeight: "16px", fontWeight: 900, textTransform: "uppercase", letterSpacing: 0 }}>
+                                <p style={{ margin: "0 0 8px", color: "#3A41F6", fontSize: 12, lineHeight: "16px", fontWeight: 900, textTransform: "uppercase", letterSpacing: 0 }}>
                                   Datum & tijd
                                 </p>
-                                <p style={{ margin: 0, color: "#111111", fontSize: 22, lineHeight: "28px", fontWeight: 900 }}>
+                                <p style={{ margin: 0, color: "#FFFFFF", fontSize: 22, lineHeight: "28px", fontWeight: 900 }}>
                                   {date ?? "Datum onbekend"}
                                 </p>
                                 {time ? (
-                                  <p style={{ margin: "6px 0 0", color: "#111111", fontSize: 28, lineHeight: "34px", fontWeight: 900 }}>
+                                  <p style={{ margin: "8px 0 0", color: "#FFFFFF", fontSize: 34, lineHeight: "40px", fontWeight: 900 }}>
                                     {time}
                                   </p>
                                 ) : null}
@@ -98,8 +105,19 @@ export function admin_booking_notification(data: Record<string, any>): EmailRend
                           </tbody>
                         </table>
 
-                        <table width="100%" cellPadding="0" cellSpacing="0" role="presentation" style={{ marginTop: 12 }}>
+                        <table width="100%" cellPadding="0" cellSpacing="0" role="presentation" style={{ marginTop: 14, background: "#F4F6FB", borderRadius: 12 }}>
                           <tbody>
+                            <tr>
+                              <td style={{ padding: "6px 18px 0" }}>
+                                <p style={{ margin: "12px 0 0", color: "#3A41F6", fontSize: 12, lineHeight: "16px", fontWeight: 900, textTransform: "uppercase", letterSpacing: 0 }}>
+                                  Afspraak details
+                                </p>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style={{ padding: "0 18px 8px" }}>
+                                <table width="100%" cellPadding="0" cellSpacing="0" role="presentation">
+                                  <tbody>
                             <DetailRow label="Klant" value={customerName} />
                             <DetailRow label="Dienst" value={data.service_name} />
                             <DetailRow label="Duur" value={duration} />
@@ -108,27 +126,32 @@ export function admin_booking_notification(data: Record<string, any>): EmailRend
                               label="Contact"
                               value={(
                                 <>
-                                  {phone ? <><a href={`tel:${phone}`} style={{ color: "#171717", textDecoration: "none" }}>{phone}</a><br /></> : null}
-                                  {email ? <a href={`mailto:${email}`} style={{ color: "#171717", textDecoration: "underline" }}>{email}</a> : null}
+                                  {phone ? <><a href={`tel:${phone}`} style={{ color: "#111827", textDecoration: "none" }}>{phone}</a><br /></> : null}
+                                  {email ? <a href={`mailto:${email}`} style={{ color: "#111827", textDecoration: "underline" }}>{email}</a> : null}
                                 </>
                               )}
                             />
+                            <DetailRow label="Locatie" value="Buikslotermeerplein 13, Amsterdam" />
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
                           </tbody>
                         </table>
 
-                        <table width="100%" cellPadding="0" cellSpacing="0" role="presentation" style={{ marginTop: 22, borderTop: "1px solid #ece7dc" }}>
+                        <table width="100%" cellPadding="0" cellSpacing="0" role="presentation" style={{ marginTop: 22, background: "#0B0C10", borderRadius: 12 }}>
                           <tbody>
                             <tr>
-                              <td style={{ paddingTop: 16 }}>
-                                <p style={{ margin: 0, color: "#111111", fontSize: 14, lineHeight: "20px", fontWeight: 800 }}>
-                                  BarberFlow
+                              <td style={{ padding: "16px 18px" }}>
+                                <p style={{ margin: 0, color: "#FFFFFF", fontSize: 14, lineHeight: "20px", fontWeight: 800 }}>
+                                  RW CUTZZ
                                 </p>
-                                <p style={{ margin: "2px 0 0", color: "#7a715f", fontSize: 13, lineHeight: "19px" }}>
-                                  Automatische boekingsmelding
+                                <p style={{ margin: "3px 0 0", color: "#9CA3AF", fontSize: 13, lineHeight: "19px" }}>
+                                  Buikslotermeerplein 13, Amsterdam
                                 </p>
-                                <p style={{ margin: "12px 0 0", color: "#8a8170", fontSize: 12, lineHeight: "18px" }}>
+                                <p style={{ margin: "12px 0 0", color: "#9CA3AF", fontSize: 12, lineHeight: "18px" }}>
                                   Dit systeem is ontwikkeld door{" "}
-                                  <a href="http://geheeldigitaal.nl/" style={{ color: "#6f560c", textDecoration: "underline" }}>
+                                  <a href="http://geheeldigitaal.nl/" style={{ color: "#3A41F6", textDecoration: "underline" }}>
                                     Geheel Digitaal
                                   </a>
                                 </p>
